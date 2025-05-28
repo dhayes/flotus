@@ -5,6 +5,7 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable from 'react-draggable';
+import { Checkbox } from '@radix-ui/react-checkbox';
 
 interface AddNumbersProps {
     name: string;
@@ -41,9 +42,10 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
                         {label}
                     </CardHeader>
-                    <CardContent className="p-4 bg-[#696f72]">
-                        <div className='flex flex-col items-stretch gap-4 text-justify' >
+                    <CardContent className="py-4 px-0 bg-[#696f72]">
+                        <div className='flex flex-col items-stretch gap-4 text-justify'>
                             <div className='self-start'>
+                                <input id='input1Checkbox' type='checkbox' className='mr-2 ml-0' />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                     type='number' 
@@ -52,6 +54,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                                 />
                             </div>
                             <div className='self-start'>
+                                <input id='input2Checkbox' type='checkbox' className='mr-2 ml-0' />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                     type='number' 
@@ -66,6 +69,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                                     value={output}
                                     readOnly
                                 /> 
+                                <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' />
                             </div>
                         </div>
                     </CardContent>
