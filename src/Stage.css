@@ -1,0 +1,10 @@
+.grid-background {
+  background-color: #1e1e1e; /* Dark base */
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 10px 10px; /* Size of each grid square */
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
