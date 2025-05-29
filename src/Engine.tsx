@@ -10,7 +10,9 @@ const Engine: React.FC<EngineProps> = (props) => {
     const [newConnectionInputUpdater, setNewConnectionInputUpdater] = useState<((value: any) => void)>();
 
     const [newConnectionOutputDependencyUpdater, setNewConnectionOutputDependencyUpdater] = useState<((value: any) => void)>()
-
+    
+    const [selectedOutputId, setSelectedOutputId] = useState<string|null>(null)
+    
     interface InputSetter {
         (value: any): void;
     }

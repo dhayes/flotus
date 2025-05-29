@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -15,6 +15,13 @@ interface AddNumbersProps {
     setnewConnectionOutputDependencyUpdater: (value: any) => void;
 }
 
+type Input = {
+    id: string;
+    value: number;
+    connected: string | null;
+    setNewConnectionInputUpdater: (value: any) => void;
+}
+
 const AddNumbers: React.FC<AddNumbersProps> = ({ 
     name, 
     label, 
@@ -24,31 +31,86 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     setnewConnectionOutputDependencyUpdater
 }) => {
 
+    const inputsData = [
+        {
+            id: useId(),
+            value: 0,
+            connected: null,
+            setNewConnectionInputUpdater
+        },
+        {
+            id: useId(),
+            value: 0,
+            connected: null,
+            setNewConnectionInputUpdater
+        }
+    ]
+
+    const [inputs, setInputs] = useState<Input[]>(inputsData)
+
+    const updateInput = (index: number, value: number) => {
+        setInputs(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                value: value
+            };
+            return updated;
+        });
+    };
+
+    // inputs.map((input, index) => {
+    //     const inputConnectioninFunction = () => {
+    //         const f = (value: any) => {
+    //             updateInput(index, value);
+    //         }
+    //         return f;
+    //     };
+    //     return ( 
+    //     <div className='self-start'>
+    //         <input
+    //             id={input.id}
+    //             type='checkbox'
+    //             className='mr-2 ml-0'
+    //             onClick={() => setNewConnectionInputUpdater(inputConnectioninFunction)}
+    //         />
+    //         <input
+    //             className='w-1/3 py-0 px-2 bg-white text-black rounded'
+    //             type='number'
+    //             value={input.value}
+    //             onChange={e => updateInput(index, Number(e.target.value))}
+    //         />
+    //     </div>
+    // )});
+
     const addNumbers = (a: number, b: number): number => {
         return a + b;
     }
 
-    const [input1, setInput1] = React.useState<number>(0);
-    const [input2, setInput2] = React.useState<number>(0);
-    const [output, setOutput] = React.useState<number>(addNumbers(input1, input2));
+    // const [input1, setInput1] = React.useState<number>(0);
+    // const [input2, setInput2] = React.useState<number>(0);
+    const [output, setOutput] = React.useState<number>(addNumbers(inputs[0].value, inputs[1].value));
 
-    const input1ConnectioninFunction = () => {
-        const f = (value: any) => {
-            setInput1(value);
-        }
-        return f;
-    };
-    const input2ConnectioninFunction = () => {
-        const f = (value: any) => {
-            setInput2(value);
-        }
-        return f;
-    };
+    // const input1ConnectioninFunction = () => {
+    //     const f = (value: any) => {
+    //         setInput1(value);
+    //     }
+    //     return f;
+    // };
+    // const input2ConnectioninFunction = () => {
+    //     const f = (value: any) => {
+    //         setInput2(value);
+    //     }
+    //     return f;
+    // };
+
+    // useEffect(() => {
+    //     setOutput(addNumbers(input1, input2));
+    // }, [input1, input2]);
 
     useEffect(() => {
-        setOutput(addNumbers(input1, input2));
-    }, [input1, input2]);
-
+        setOutput(addNumbers(inputs[0].value, inputs[1].value));
+    }, [inputs]);
 
     const [dependencies, setDependencies] = useState<Array<(value: any) => void>>([]);
 
@@ -86,7 +148,34 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            <div className='self-start'>
+                            {
+                                inputs.map((input, index) => {
+                                    const inputConnectioninFunction = () => {
+                                        const f = (value: any) => {
+                                            updateInput(index, value);
+                                        }
+                                        return f;
+                                    };
+                                    return (
+                                        <div className='self-start'>
+                                            <input
+                                                id={input.id}
+                                                type='checkbox'
+                                                className='mr-2 ml-0'
+                                                onClick={() => setNewConnectionInputUpdater(inputConnectioninFunction)}
+                                            />
+                                            <input
+                                                className='w-1/3 py-0 px-2 bg-white text-black rounded'
+                                                type='number'
+                                                value={input.value}
+                                                onChange={e => updateInput(index, Number(e.target.value))}
+                                            />
+                                        </div>
+                                    )
+                                })
+                            }
+                            
+                            {/* <div className='self-start'>
                                 <input 
                                     id='input1Checkbox' 
                                     type='checkbox' 
@@ -113,7 +202,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     value={input2} 
                                     onChange={e => setInput2(Number(e.target.value))} 
                                 />
-                            </div>
+                            </div> */}
                             <div className='self-end text-right'>
                                 <input
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
