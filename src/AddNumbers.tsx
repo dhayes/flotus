@@ -13,9 +13,17 @@ interface AddNumbersProps {
     description?: string;
     width?: number;
     setNewConnectionInputUpdater: (value: any) => void;
+    setnewConnectionOutputDependencyUpdater: (value: any) => void;
 }
 
-const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width, setNewConnectionInputUpdater }) => {
+const AddNumbers: React.FC<AddNumbersProps> = ({ 
+    name, 
+    label, 
+    description, 
+    width, 
+    setNewConnectionInputUpdater,
+    setnewConnectionOutputDependencyUpdater 
+}) => {
 
     const addNumbers = (a: number, b: number): number => {
         return a + b;
@@ -25,17 +33,17 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
     const [input2, setInput2] = React.useState<number>(0);
     const [output, setOutput] = React.useState<number>(addNumbers(input1, input2));
 
-    const inputs: Array<[any, (value: any) => void]> = [input1, input2].map((input) => {
-        return React.useState<number>(input);
-    });
+    // const inputs: Array<[any, (value: any) => void]> = [input1, input2].map((input) => {
+    //     return React.useState<number>(input);
+    // });
 
-    const updateInputFunctions: Array<(value: number) => void> = inputs.map((input) => {
-        const [_, setInputValue] = input;
-        const f = (value: any) => {
-            setInputValue(value);
-        };
-        return f;
-    } );
+    // const updateInputFunctions: Array<(value: number) => void> = inputs.map((input) => {
+    //     const [_, setInputValue] = input;
+    //     const f = (value: any) => {
+    //         setInputValue(value);
+    //     };
+    //     return f;
+    // } );
 
     //const [outputs, setOutputs] = React.useState<number[]>([output]);
 
@@ -71,6 +79,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
         setDependencies(previousState => {
             return [...previousState, f]
         })
+    }
+    const addDependencyFunction = () => {
+        const f = (value: any) => {
+            addDependency(value)
+        }
+        return f;
     }
 
     useEffect(() => {
@@ -130,7 +144,9 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                                     value={output}
                                     readOnly
                                 /> 
-                                <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' />
+                                <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' onClick={
+                                    () => setnewConnectionOutputDependencyUpdater(addDependencyFunction)
+                                } />
                             </div>
                         </div>
                     </CardContent>
