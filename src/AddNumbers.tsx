@@ -12,9 +12,10 @@ interface AddNumbersProps {
     label: string;
     description?: string;
     width?: number;
+    setNewConnectionInputUpdater: (value: any) => void;
 }
 
-const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width }) => {
+const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width, setNewConnectionInputUpdater }) => {
 
     const addNumbers = (a: number, b: number): number => {
         return a + b;
@@ -38,12 +39,18 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
 
     //const [outputs, setOutputs] = React.useState<number[]>([output]);
 
-    const input1ConnectioninFunction = (value: number) => {
-        setInput1(value);
+    const input1ConnectioninFunction = () => {
+        const f = (value: any) => {
+            setInput1(value);
+        }
+        return f;
     };
-    const input2ConnectioninFunction = (value: number) => {
-        setInput2(value);
-    }
+    const input2ConnectioninFunction = () => {
+        const f = (value: any) => {
+            setInput2(value);
+        }
+        return f;
+    };
 
     useEffect(() => {
         setOutput(addNumbers(input1, input2));
@@ -89,7 +96,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             <div className='self-start'>
-                                <input id='input1Checkbox' type='checkbox' className='mr-2 ml-0' />
+                                <input 
+                                    id='input1Checkbox' 
+                                    type='checkbox' 
+                                    className='mr-2 ml-0' 
+                                    onClick={() => setNewConnectionInputUpdater(input1ConnectioninFunction)} 
+                                />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                     type='number' 
@@ -98,7 +110,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
                                 />
                             </div>
                             <div className='self-start'>
-                                <input id='input2Checkbox' type='checkbox' className='mr-2 ml-0' />
+                                <input 
+                                    id='input2Checkbox' 
+                                    type='checkbox' 
+                                    className='mr-2 ml-0' 
+                                    onClick={() => setNewConnectionInputUpdater(input2ConnectioninFunction)} 
+                                />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                     type='number' 
