@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -24,9 +24,53 @@ const AddNumbers: React.FC<AddNumbersProps> = ({ name, label, description, width
     const [input2, setInput2] = React.useState<number>(0);
     const [output, setOutput] = React.useState<number>(addNumbers(input1, input2));
 
+    const inputs: Array<[any, (value: any) => void]> = [input1, input2].map((input) => {
+        return React.useState<number>(input);
+    });
+
+    const updateInputFunctions: Array<(value: number) => void> = inputs.map((input) => {
+        const [_, setInputValue] = input;
+        const f = (value: any) => {
+            setInputValue(value);
+        };
+        return f;
+    } );
+
+    //const [outputs, setOutputs] = React.useState<number[]>([output]);
+
+    const input1ConnectioninFunction = (value: number) => {
+        setInput1(value);
+    };
+    const input2ConnectioninFunction = (value: number) => {
+        setInput2(value);
+    }
+
     useEffect(() => {
         setOutput(addNumbers(input1, input2));
     }, [input1, input2]);
+
+    //demo fun, to be deleted
+    const outputConnectioninFunction = (value: number) => {
+        console.log(`Output connection function called with value: ${value}`);
+    }
+
+    // const dependencies: Array<(value: any) => void> = [
+    //     outputConnectioninFunction
+    // ];
+
+    const [dependencies, setDependencies] = useState<Array<(value: any) => void>>([]);
+
+    const addDependency = (f: (value: any) => void) => {
+        setDependencies(previousState => {
+            return [...previousState, f]
+        })
+    }
+
+    useEffect(() => {
+        dependencies.forEach((f) => {
+            f(output);
+        });
+    }, [output]);
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
