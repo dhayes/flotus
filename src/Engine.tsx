@@ -6,13 +6,10 @@ interface EngineProps {
 }
 
 const Engine: React.FC<EngineProps> = (props) => {
-    //const [nodes, setNodes] = React.useState<Array<any>>([]);
 
-    const [newConnectionInputUpdater, setNewConnectionInputUpdater] = useState<((value: any) => void)>();
-    const setNewConnectionInputUpdaterFun = (value: any) => setNewConnectionInputUpdater(value);
+    const [newConnectionInput, setNewConnectionInput] = useState<((value: any) => void)>();
 
     const [newConnectionOutputDependencyUpdater, setNewConnectionOutputDependencyUpdater] = useState<((value: any) => void)>()
-    const setNewConnectionOutputDependencyUpdaterFun = (value: any) => setNewConnectionOutputDependencyUpdater(value)
 
     interface InputSetter {
         (value: any): void;
@@ -29,14 +26,14 @@ const Engine: React.FC<EngineProps> = (props) => {
     const testNode1 = <AddNumbers 
         name='test1' 
         label='test1' 
-        setNewConnectionInputUpdater={setNewConnectionInputUpdaterFun}
-        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdaterFun}
+        setNewConnectionInput={setNewConnectionInput}
+        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
     />
     const testNode2 = <AddNumbers 
         name='test2' 
         label='test2' 
-        setNewConnectionInputUpdater={setNewConnectionInputUpdaterFun}
-        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdaterFun}
+        setNewConnectionInput={setNewConnectionInput}
+        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
     />
 
     return (
@@ -45,14 +42,14 @@ const Engine: React.FC<EngineProps> = (props) => {
             { testNode2 }
             <button onClick={() => {
                 console.log("clicked")   
-                console.log(newConnectionInputUpdater)   
-                newConnectionInputUpdater && newConnectionInputUpdater(7)} 
+                console.log(newConnectionInput)   
+                newConnectionInput && newConnectionInput(7)} 
             } 
             /> 
             <button 
                 onClick={() => {
-                    if (newConnectionInputUpdater && newConnectionOutputDependencyUpdater) {
-                        createConnection(newConnectionInputUpdater, newConnectionOutputDependencyUpdater);
+                    if (newConnectionInput && newConnectionOutputDependencyUpdater) {
+                        createConnection(newConnectionInput, newConnectionOutputDependencyUpdater);
                     } else {
                         console.warn("Connection updaters are not set.");
                     }

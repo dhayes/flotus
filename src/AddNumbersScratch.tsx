@@ -1,18 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
     CardHeader,
 } from "@/components/ui/card";
 import Draggable from 'react-draggable';
+import { Checkbox } from '@radix-ui/react-checkbox';
 
 interface AddNumbersProps {
     name: string;
     label: string;
     description?: string;
     width?: number;
-    setNewConnectionInput: (value: any) => void;
+    setNewConnectionInputUpdater: (value: any) => void;
     setnewConnectionOutputDependencyUpdater: (value: any) => void;
+}
+
+type NodeInput = {
+    id: string;
+    name: string;
+    type: string;
+    connected: boolean;
+    controler?: React.ComponentType;
+    value: any;
+    serValue: any;
+    updater?: (value: any) => any;
 }
 
 const AddNumbers: React.FC<AddNumbersProps> = ({ 
@@ -20,7 +32,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     label, 
     description, 
     width, 
-    setNewConnectionInput: setNewConnectionInput,
+    setNewConnectionInputUpdater,
     setnewConnectionOutputDependencyUpdater 
 }) => {
 
@@ -31,6 +43,25 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     const [input1, setInput1] = React.useState<number>(0);
     const [input2, setInput2] = React.useState<number>(0);
     const [output, setOutput] = React.useState<number>(addNumbers(input1, input2));
+
+    const input1Id = useId()
+    const input2Id = useId()
+    const outputId = useId()
+
+    
+    // const inputs: Array<[any, (value: any) => void]> = [input1, input2].map((input) => {
+    //     return React.useState<number>(input);
+    // });
+
+    // const updateInputFunctions: Array<(value: number) => void> = inputs.map((input) => {
+    //     const [_, setInputValue] = input;
+    //     const f = (value: any) => {
+    //         setInputValue(value);
+    //     };
+    //     return f;
+    // } );
+
+    //const [outputs, setOutputs] = React.useState<number[]>([output]);
 
     const input1ConnectioninFunction = () => {
         const f = (value: any) => {
@@ -49,6 +80,14 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
         setOutput(addNumbers(input1, input2));
     }, [input1, input2]);
 
+    //demo fun, to be deleted
+    const outputConnectioninFunction = (value: number) => {
+        console.log(`Output connection function called with value: ${value}`);
+    }
+
+    // const dependencies: Array<(value: any) => void> = [
+    //     outputConnectioninFunction
+    // ];
 
     const [dependencies, setDependencies] = useState<Array<(value: any) => void>>([]);
 
@@ -91,7 +130,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     id='input1Checkbox' 
                                     type='checkbox' 
                                     className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInput(input1ConnectioninFunction)} 
+                                    onClick={() => setNewConnectionInputUpdater(input1ConnectioninFunction)} 
                                 />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
@@ -105,7 +144,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     id='input2Checkbox' 
                                     type='checkbox' 
                                     className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInput(input2ConnectioninFunction)} 
+                                    onClick={() => setNewConnectionInputUpdater(input2ConnectioninFunction)} 
                                 />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
