@@ -7,7 +7,7 @@ interface EngineProps {
 
 const Engine: React.FC<EngineProps> = (props) => {
 
-    const [newConnectionInput, setNewConnectionInput] = useState<((value: any) => void)>();
+    const [newConnectionInputUpdater, setNewConnectionInputUpdater] = useState<((value: any) => void)>();
 
     const [newConnectionOutputDependencyUpdater, setNewConnectionOutputDependencyUpdater] = useState<((value: any) => void)>()
 
@@ -26,13 +26,13 @@ const Engine: React.FC<EngineProps> = (props) => {
     const testNode1 = <AddNumbers 
         name='test1' 
         label='test1' 
-        setNewConnectionInput={setNewConnectionInput}
+        setNewConnectionInputUpdater={setNewConnectionInputUpdater}
         setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
     />
     const testNode2 = <AddNumbers 
         name='test2' 
         label='test2' 
-        setNewConnectionInput={setNewConnectionInput}
+        setNewConnectionInputUpdater={setNewConnectionInputUpdater}
         setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
     />
 
@@ -42,14 +42,14 @@ const Engine: React.FC<EngineProps> = (props) => {
             { testNode2 }
             <button onClick={() => {
                 console.log("clicked")   
-                console.log(newConnectionInput)   
-                newConnectionInput && newConnectionInput(7)} 
+                console.log(newConnectionInputUpdater)   
+                newConnectionInputUpdater && newConnectionInputUpdater(7)} 
             } 
             /> 
             <button 
                 onClick={() => {
-                    if (newConnectionInput && newConnectionOutputDependencyUpdater) {
-                        createConnection(newConnectionInput, newConnectionOutputDependencyUpdater);
+                    if (newConnectionInputUpdater && newConnectionOutputDependencyUpdater) {
+                        createConnection(newConnectionInputUpdater, newConnectionOutputDependencyUpdater);
                     } else {
                         console.warn("Connection updaters are not set.");
                     }

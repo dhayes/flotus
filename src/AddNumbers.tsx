@@ -11,7 +11,7 @@ interface AddNumbersProps {
     label: string;
     description?: string;
     width?: number;
-    setNewConnectionInput: (value: any) => void;
+    setNewConnectionInputUpdater: (value: any) => void;
     setnewConnectionOutputDependencyUpdater: (value: any) => void;
 }
 
@@ -20,7 +20,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     label, 
     description, 
     width, 
-    setNewConnectionInput: setNewConnectionInput,
+    setNewConnectionInputUpdater,
     setnewConnectionOutputDependencyUpdater 
 }) => {
 
@@ -91,7 +91,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     id='input1Checkbox' 
                                     type='checkbox' 
                                     className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInput(input1ConnectioninFunction)} 
+                                    onClick={() => setNewConnectionInputUpdater(input1ConnectioninFunction)} 
                                 />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
@@ -105,7 +105,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     id='input2Checkbox' 
                                     type='checkbox' 
                                     className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInput(input2ConnectioninFunction)} 
+                                    onClick={() => setNewConnectionInputUpdater(input2ConnectioninFunction)} 
                                 />
                                 <input 
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
