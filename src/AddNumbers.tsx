@@ -20,8 +20,8 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     label, 
     description, 
     width, 
-    setNewConnectionInputUpdater,
-    setnewConnectionOutputDependencyUpdater 
+    setNewConnectionInputUpdater, 
+    setnewConnectionOutputDependencyUpdater
 }) => {
 
     const addNumbers = (a: number, b: number): number => {
