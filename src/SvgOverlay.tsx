@@ -1,39 +1,63 @@
-// SvgOverlay.tsx
 import React from 'react';
-import { Point } from './ConnectionManager';
+import type { Connection } from './ConnectionManager';
+import type { Point } from './types';
 
 interface Props {
-  connections: { from: string; to: string }[];
+  connections: Connection[];
   nodePositions: Record<string, Point>;
 }
 
-const SvgOverlay: React.FC<Props> = ({ connections, nodePositions }) => {
-  const renderCurve = (p1: Point, p2: Point, i: number) => {
-    const cx = (p1.x + p2.x) / 2;
-    const cy = Math.min(p1.y, p2.y) - 100;
-    const d = `M ${p1.x},${p1.y} Q ${cx},${cy} ${p2.x},${p2.y}`;
-    return <path key={i} d={d} stroke="lime" strokeWidth={3} fill="none" />;
-  };
+function generateSshapedPath(
+  x1: number, y1: number,
+  x2: number, y2: number,
+  curvature = 0.2
+): string {
+  const dx = x2 - x1, dy = y2 - y1;
+  const dist = Math.hypot(dx, dy);
+  if (dist === 0) return `M ${x1},${y1} L ${x2},${y2}`;
 
-  return (
-    <svg
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 9999,
-        pointerEvents: 'none',
-      }}
-    >
-      {connections.map((conn, i) => {
-        const from = nodePositions[conn.from];
-        const to = nodePositions[conn.to];
-        return from && to ? renderCurve(from, to, i) : null;
-      })}
-    </svg>
-  );
-};
+  // unit-perpendicular
+  const ux = -dy / dist, uy = dx / dist;
+  const direction = y2 > y1 ? -1 : 1;
+  const offset = curvature * dist * direction;
+
+  // two control points at 25% and 75%, offset in opposite senses
+  const cp1x = x1 + dx * 0.25 + ux * offset;
+  const cp1y = y1 + dy * 0.25 + uy * offset;
+  const cp2x = x1 + dx * 0.75 - ux * offset;
+  const cp2y = y1 + dy * 0.75 - uy * offset;
+
+  return `M ${x1},${y1} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${x2},${y2}`;
+}
+
+const SvgOverlay: React.FC<Props> = ({ connections, nodePositions }) => (
+  <svg
+    style={{
+      position: 'fixed',
+      top: 0, left: 0,
+      width: '100vw', height: '100vh',
+      pointerEvents: 'none',
+      zIndex: 9999
+    }}
+  >
+    {connections.map((conn, i) => {
+      const p1 = nodePositions[conn.from];
+      const p2 = nodePositions[conn.to];
+      if (!p1 || !p2) return null;
+
+      const d = generateSshapedPath(p1.x, p1.y, p2.x, p2.y, 0.2);
+      return (
+        <path
+          key={i}
+          d={d}
+          stroke="lime"
+          strokeWidth={3}
+          fill="none"
+          style={{ filter: 'drop-shadow(0 0 2px black)' }}
+        />
+      );
+    })}
+  </svg>
+);
 
 export default SvgOverlay;

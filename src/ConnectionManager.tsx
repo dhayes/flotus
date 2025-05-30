@@ -1,55 +1,64 @@
-// ConnectionManager.tsx
-import React, { useState, useEffect } from 'react';
-import SvgOverlay from './SvgOverlay';
+import React, { createContext, useState } from 'react';
+import SvgOverlay from './SvgOverlay';  
+import type { Point } from './types';
 
-export type Point = { x: number; y: number };
+export interface Connection { from: string; to: string; }
 
-interface Connection {
-  from: string;
-  to: string;
-}
-
-export const ConnectionContext = React.createContext({
-  registerNode: (id: string, ref: HTMLDivElement) => {},
-  startConnection: (id: string) => {},
-  finishConnection: (id: string) => {},
-  updateNodePosition: (id: string, point: Point) => {},
+// Context gives us three actions
+export const ConnectionContext = createContext({
+  startConnection: (id: string) => {},      // begin drag from node `id`
+  finishConnection: (id: string) => {},     // release drag on node `id`
+  updateNodePosition: (id: string, p: Point) => {}, // node `id` moved to `p`
 });
 
-const ConnectionManager: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [nodes, setNodes] = useState<Record<string, Point>>({});
+interface ManagerProps {
+  initialNodes: { id: string; initialPos: Point }[];
+  children: React.ReactNode;
+}
+
+const ConnectionManager: React.FC<ManagerProps> = ({ initialNodes, children }) => {
+  // — Store each node's current center position
+  const [nodePositions, setNodePositions] = useState<Record<string,Point>>(
+    () => Object.fromEntries(initialNodes.map(n => [n.id, n.initialPos]))
+  );
+
+  // — Store finalized connections as pairs of IDs
   const [connections, setConnections] = useState<Connection[]>([]);
+
+  // — Remember which node we started dragging from (if any)
   const [pendingFrom, setPendingFrom] = useState<string | null>(null);
 
-  const registerNode = (id: string, ref: HTMLDivElement) => {
-    const rect = ref.getBoundingClientRect();
-    updateNodePosition(id, {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    });
-  };
-
-  const updateNodePosition = (id: string, point: Point) => {
-    setNodes((prev) => ({ ...prev, [id]: point }));
-  };
-
+  // Called when you mousedown on a node
   const startConnection = (id: string) => {
     setPendingFrom(id);
   };
 
+  // Called when you mouseup on a node
   const finishConnection = (id: string) => {
     if (pendingFrom && pendingFrom !== id) {
-      setConnections((prev) => [...prev, { from: pendingFrom, to: id }]);
+      setConnections(prev => [...prev, { from: pendingFrom, to: id }]);
     }
     setPendingFrom(null);
   };
 
+  // Called on every drag event to update the node's position
+  const updateNodePosition = (id: string, p: Point) => {
+    setNodePositions(prev => ({ ...prev, [id]: p }));
+  };
+
   return (
-    <ConnectionContext.Provider
-      value={{ registerNode, startConnection, finishConnection, updateNodePosition }}
-    >
+    <ConnectionContext.Provider value={{
+      startConnection,
+      finishConnection,
+      updateNodePosition
+    }}>
       {children}
-      <SvgOverlay connections={connections} nodePositions={nodes} />
+
+      {/* Draw all the connections on top */}
+      <SvgOverlay
+        connections={connections}
+        nodePositions={nodePositions}
+      />
     </ConnectionContext.Provider>
   );
 };
