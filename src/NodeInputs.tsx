@@ -23,6 +23,9 @@ const NodeInputs: React.FC<NodeInputsProps> = ({
                 const inputConnectioninFunction = (value: any) => {
                     input.updateInput(index, value);
                 };
+                const f = (value: number) => {
+                    input.updateInput(index, value);
+                };
                 return (
                     <NodeInput
                         key={input.id}
@@ -33,7 +36,7 @@ const NodeInputs: React.FC<NodeInputsProps> = ({
                         setNewConnectionInputUpdater={input.setNewConnectionInputUpdater}
                         setSelectedOutputId={input.setSelectedOutputId}
                         inputConnectioninFunction={inputConnectioninFunction}
-                        updateInput={(value: number) => input.updateInput(index, value)}
+                        updateInput={f}
                     />
                 );
             })}
