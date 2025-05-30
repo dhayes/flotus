@@ -10,8 +10,8 @@ interface NodeInputsProps {
         outputId: string | null;
         setNewConnectionInputUpdater: (value: any) => void;
         setSelectedOutputId: (value: string | null) => void;
-        updateInput: (index:number, value: number) => void;
-    }>;
+        updateInput: () => (value: number) => void;
+    }>
 }
 
 const NodeInputs: React.FC<NodeInputsProps> = ({
@@ -19,13 +19,10 @@ const NodeInputs: React.FC<NodeInputsProps> = ({
  }) => {
     return (
         <>
-            {inputs.map((input, index) => {
-                const inputConnectioninFunction = (value: any) => {
-                    input.updateInput(index, value);
-                };
-                const f = (value: number) => {
-                    input.updateInput(index, value);
-                };
+            {inputs.map((input) => {
+                const inputConnectioninFunction = () => (input: any) => {
+                    input.updateInput(input)
+                }; 
                 return (
                     <NodeInput
                         key={input.id}
@@ -36,7 +33,7 @@ const NodeInputs: React.FC<NodeInputsProps> = ({
                         setNewConnectionInputUpdater={input.setNewConnectionInputUpdater}
                         setSelectedOutputId={input.setSelectedOutputId}
                         inputConnectioninFunction={inputConnectioninFunction}
-                        updateInput={f}
+                        updateInput={input.updateInput}
                     />
                 );
             })}

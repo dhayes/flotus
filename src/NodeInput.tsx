@@ -31,6 +31,7 @@ const NodeInput: React.FC<NodeInputProps> = ({
                     setNewConnectionInputUpdater(inputConnectioninFunction);
                     setSelectedOutputId(outputId);
                 }}
+                readOnly
             />
             <input
                 className='w-1/3 py-0 px-2 bg-white text-black rounded'

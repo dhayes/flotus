@@ -5,7 +5,6 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable from 'react-draggable';
-import NodeInputs from './NodeInputs';
 
 interface AddNumbersProps {
     name: string;
@@ -22,7 +21,6 @@ type Input = {
     id: string;
     value: number;
     connected: string | null;
-    label: string;
     setNewConnectionInputUpdater: (value: any) => void;
 }
 
@@ -37,20 +35,17 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     setSelectedOutputId,
 }) => {
 
-    console.log('AddNumbers component rendered');
     const inputsData = [
         {
             id: useId(),
             value: 0,
             connected: null,
-            label: 'Input 1',
             setNewConnectionInputUpdater
         },
         {
             id: useId(),
             value: 0,
             connected: null,
-            label: 'Input 2',
             setNewConnectionInputUpdater
         }
     ]
@@ -58,15 +53,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     const [inputs, setInputs] = useState<Input[]>(inputsData)
 
     const updateInput = (index: number, value: number) => {
-        console.log(`Updating input at index ${index} with value ${value}`);
         setInputs(prev => {
-            console.log('Previous inputs:', prev);
             const updated = [...prev];
             updated[index] = {
                 ...updated[index],
                 value: value
             };
-            console.log('Updated inputs:', updated);
             return updated;
         });
     };
@@ -119,19 +111,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            <NodeInputs
-                                inputs={inputsData.map((input, index) => ({
-                                    id: input.id,
-                                    value: inputs[index].value,
-                                    connected: input.connected,
-                                    label: input.label,
-                                    setNewConnectionInputUpdater: input.setNewConnectionInputUpdater,
-                                    outputId: selectedOutputId,
-                                    updateInput: (value: number) => updateInput(index, value),
-                                    setSelectedOutputId
-                                }))}
-                            />
-                            {/* {
+                            {
                                 inputs.map((input, index) => {
                                     const inputConnectioninFunction = () => {
                                         const f = (value: any) => {
@@ -159,7 +139,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                         </div>
                                     )
                                 })
-                            } */}
+                            }
                             <div className='self-end text-right'>
                                 <input
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
