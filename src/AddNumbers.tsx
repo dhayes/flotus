@@ -69,8 +69,6 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
 
     const outputId = useId();
 
-    // const [input1, setInput1] = React.useState<number>(0);
-    // const [input2, setInput2] = React.useState<number>(0);
     const [output, setOutput] = React.useState<number>(addNumbers(inputs[0].value, inputs[1].value));
 
     useEffect(() => {
