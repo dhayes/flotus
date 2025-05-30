@@ -13,6 +13,8 @@ interface AddNumbersProps {
     width?: number;
     setNewConnectionInputUpdater: (value: any) => void;
     setnewConnectionOutputDependencyUpdater: (value: any) => void;
+    selectedOutputId: string | null;
+    setSelectedOutputId: (value: any) => void; 
 }
 
 type Input = {
@@ -28,7 +30,9 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     description, 
     width, 
     setNewConnectionInputUpdater, 
-    setnewConnectionOutputDependencyUpdater
+    setnewConnectionOutputDependencyUpdater,
+    selectedOutputId,
+    setSelectedOutputId,
 }) => {
 
     const inputsData = [
@@ -59,54 +63,15 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
         });
     };
 
-    // inputs.map((input, index) => {
-    //     const inputConnectioninFunction = () => {
-    //         const f = (value: any) => {
-    //             updateInput(index, value);
-    //         }
-    //         return f;
-    //     };
-    //     return ( 
-    //     <div className='self-start'>
-    //         <input
-    //             id={input.id}
-    //             type='checkbox'
-    //             className='mr-2 ml-0'
-    //             onClick={() => setNewConnectionInputUpdater(inputConnectioninFunction)}
-    //         />
-    //         <input
-    //             className='w-1/3 py-0 px-2 bg-white text-black rounded'
-    //             type='number'
-    //             value={input.value}
-    //             onChange={e => updateInput(index, Number(e.target.value))}
-    //         />
-    //     </div>
-    // )});
-
     const addNumbers = (a: number, b: number): number => {
         return a + b;
     }
 
+    const outputId = useId();
+
     // const [input1, setInput1] = React.useState<number>(0);
     // const [input2, setInput2] = React.useState<number>(0);
     const [output, setOutput] = React.useState<number>(addNumbers(inputs[0].value, inputs[1].value));
-
-    // const input1ConnectioninFunction = () => {
-    //     const f = (value: any) => {
-    //         setInput1(value);
-    //     }
-    //     return f;
-    // };
-    // const input2ConnectioninFunction = () => {
-    //     const f = (value: any) => {
-    //         setInput2(value);
-    //     }
-    //     return f;
-    // };
-
-    // useEffect(() => {
-    //     setOutput(addNumbers(input1, input2));
-    // }, [input1, input2]);
 
     useEffect(() => {
         setOutput(addNumbers(inputs[0].value, inputs[1].value));
@@ -162,7 +127,10 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                                 id={input.id}
                                                 type='checkbox'
                                                 className='mr-2 ml-0'
-                                                onClick={() => setNewConnectionInputUpdater(inputConnectioninFunction)}
+                                                onClick={() => {
+                                                    setNewConnectionInputUpdater(inputConnectioninFunction);
+                                                    setSelectedOutputId(outputId);
+                                                }}
                                             />
                                             <input
                                                 className='w-1/3 py-0 px-2 bg-white text-black rounded'
@@ -174,35 +142,6 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     )
                                 })
                             }
-                            
-                            {/* <div className='self-start'>
-                                <input 
-                                    id='input1Checkbox' 
-                                    type='checkbox' 
-                                    className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInputUpdater(input1ConnectioninFunction)} 
-                                />
-                                <input 
-                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                    type='number' 
-                                    value={input1} 
-                                    onChange={e => setInput1(Number(e.target.value))} 
-                                />
-                            </div>
-                            <div className='self-start'>
-                                <input 
-                                    id='input2Checkbox' 
-                                    type='checkbox' 
-                                    className='mr-2 ml-0' 
-                                    onClick={() => setNewConnectionInputUpdater(input2ConnectioninFunction)} 
-                                />
-                                <input 
-                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                    type='number' 
-                                    value={input2} 
-                                    onChange={e => setInput2(Number(e.target.value))} 
-                                />
-                            </div> */}
                             <div className='self-end text-right'>
                                 <input
                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'

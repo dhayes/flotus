@@ -11,7 +11,7 @@ const Engine: React.FC<EngineProps> = (props) => {
 
     const [newConnectionOutputDependencyUpdater, setNewConnectionOutputDependencyUpdater] = useState<((value: any) => void)>()
     
-    const [selectedOutputId, setSelectedOutputId] = useState<string|null>(null)
+    const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
     
     interface InputSetter {
         (value: any): void;
@@ -30,12 +30,16 @@ const Engine: React.FC<EngineProps> = (props) => {
         label='test1' 
         setNewConnectionInputUpdater={setNewConnectionInputUpdater}
         setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        selectedOutputId={selectedOutputId}
+        setSelectedOutputId={setSelectedOutputId}
     />
     const testNode2 = <AddNumbers 
         name='test2' 
         label='test2' 
         setNewConnectionInputUpdater={setNewConnectionInputUpdater}
         setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        selectedOutputId={selectedOutputId}
+        setSelectedOutputId={setSelectedOutputId}
     />
 
     return (
