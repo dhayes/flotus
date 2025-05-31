@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -12,7 +12,7 @@ interface AddNumbersProps {
     description?: string;
     width?: number;
     setNewConnectionInputUpdater: (value: any) => void;
-    setnewConnectionOutputDependencyUpdater: (value: any) => void;
+    setNewConnectionOutputDependencyUpdater: (value: any) => void;
     selectedOutputId: string | null;
     setSelectedOutputId: (value: any) => void; 
 }
@@ -30,7 +30,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     description, 
     width, 
     setNewConnectionInputUpdater, 
-    setnewConnectionOutputDependencyUpdater,
+    setNewConnectionOutputDependencyUpdater: setNewConnectionOutputDependencyUpdater,
     selectedOutputId,
     setSelectedOutputId,
 }) => {
@@ -113,14 +113,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             {
                                 inputs.map((input, index) => {
-                                    const inputConnectioninFunction = () => {
-                                        const f = (value: any) => {
-                                            updateInput(index, value);
-                                        }
-                                        return f;
-                                    };
+                                    const inputConnectioninFunction = useCallback(
+                                        () => (value: any) => updateInput(index, value),
+                                        [index]
+                                    );
                                     return (
-                                        <div className='self-start'>
+                                        <div className='self-start' key={input.id}>
                                             <input
                                                 id={input.id}
                                                 type='checkbox'
@@ -148,7 +146,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     readOnly
                                 /> 
                                 <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' onClick={
-                                    () => setnewConnectionOutputDependencyUpdater(addDependencyFunction)
+                                    () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
                                 } />
                             </div>
                         </div>

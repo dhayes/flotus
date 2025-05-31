@@ -29,7 +29,7 @@ const Engine: React.FC<EngineProps> = (props) => {
         name='test1' 
         label='test1' 
         setNewConnectionInputUpdater={setNewConnectionInputUpdater}
-        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        setNewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
         selectedOutputId={selectedOutputId}
         setSelectedOutputId={setSelectedOutputId}
     />
@@ -37,7 +37,7 @@ const Engine: React.FC<EngineProps> = (props) => {
         name='test2' 
         label='test2' 
         setNewConnectionInputUpdater={setNewConnectionInputUpdater}
-        setnewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        setNewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
         selectedOutputId={selectedOutputId}
         setSelectedOutputId={setSelectedOutputId}
     />
