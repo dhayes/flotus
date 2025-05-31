@@ -5,9 +5,9 @@ interface NodeInputProps {
     value: number;
     connected: string | null;
     outputId: string | null;
-    setNewConnectionInputUpdater: (value: any) => void;
+    setNewConnectionInputUpdater: (f: () => (value: any) => void) => void;
     setSelectedOutputId: (value: string | null) => void;
-    inputConnectioninFunction: (value: any) => void;
+    inputConnectioninFunction: () => (value: any) => void;
     updateInput: (value: number) => void;
 }
 

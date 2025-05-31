@@ -5,6 +5,7 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable from 'react-draggable';
+import NodeInput from './NodeInput';
 
 interface AddNumbersProps {
     name: string;
@@ -12,17 +13,16 @@ interface AddNumbersProps {
     description?: string;
     width?: number;
     setNewConnectionInputUpdater: (value: any) => void;
-    setNewConnectionOutputDependencyUpdater: (value: any) => void;
+    setNewConnectionOutputDependencyUpdater: (f: (value: any) => void) => void;
     selectedOutputId: string | null;
     setSelectedOutputId: (value: any) => void; 
 }
 
-type Input = {
-    id: string;
-    value: number;
-    connected: string | null;
-    setNewConnectionInputUpdater: (value: any) => void;
-}
+// type Input = {
+//     id: string;
+//     value: number;
+//     connected: string | null;
+// }
 
 const AddNumbers: React.FC<AddNumbersProps> = ({ 
     name, 
@@ -30,7 +30,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     description, 
     width, 
     setNewConnectionInputUpdater, 
-    setNewConnectionOutputDependencyUpdater: setNewConnectionOutputDependencyUpdater,
+    setNewConnectionOutputDependencyUpdater,
     selectedOutputId,
     setSelectedOutputId,
 }) => {
@@ -40,17 +40,15 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
             id: useId(),
             value: 0,
             connected: null,
-            setNewConnectionInputUpdater
         },
         {
             id: useId(),
             value: 0,
             connected: null,
-            setNewConnectionInputUpdater
         }
     ]
 
-    const [inputs, setInputs] = useState<Input[]>(inputsData)
+    const [inputs, setInputs] = useState(inputsData)
 
     const updateInput = (index: number, value: number) => {
         setInputs(prev => {
@@ -113,28 +111,23 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             {
                                 inputs.map((input, index) => {
-                                    const inputConnectioninFunction = useCallback(
-                                        () => (value: any) => updateInput(index, value),
-                                        [index]
-                                    );
+                                    const inputConnectioninFunction = () => {
+                                        return (value: any) => {
+                                            updateInput(index, value);
+                                        };
+                                    };
                                     return (
-                                        <div className='self-start' key={input.id}>
-                                            <input
-                                                id={input.id}
-                                                type='checkbox'
-                                                className='mr-2 ml-0'
-                                                onClick={() => {
-                                                    setNewConnectionInputUpdater(inputConnectioninFunction);
-                                                    setSelectedOutputId(outputId);
-                                                }}
-                                            />
-                                            <input
-                                                className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                                type='number'
-                                                value={input.value}
-                                                onChange={e => updateInput(index, Number(e.target.value))}
-                                            />
-                                        </div>
+                                        <NodeInput
+                                            key={input.id}
+                                            id={input.id}
+                                            value={input.value}
+                                            connected={input.connected}
+                                            outputId={outputId}
+                                            setNewConnectionInputUpdater={setNewConnectionInputUpdater}
+                                            setSelectedOutputId={setSelectedOutputId}
+                                            inputConnectioninFunction={inputConnectioninFunction}
+                                            updateInput={(v) => updateInput(index, v)}
+                                        />
                                     )
                                 })
                             }
