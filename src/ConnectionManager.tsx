@@ -1,63 +1,65 @@
+// ConnectionManager.tsx
 import React, { createContext, useState } from 'react';
-import SvgOverlay from './SvgOverlay';  
-import type { Point } from './types';
+import SvgOverlay from './SvgOverlay';
 
-export interface Connection { from: string; to: string; }
+export type Point = { x: number; y: number };
 
-// Context gives us three actions
+export interface Connection {
+  fromPortId: string;
+  toPortId: string;
+}
+
 export const ConnectionContext = createContext({
-  startConnection: (id: string) => {},      // begin drag from node `id`
-  finishConnection: (id: string) => {},     // release drag on node `id`
-  updateNodePosition: (id: string, p: Point) => {}, // node `id` moved to `p`
+  startConnection: (portId: string) => {},
+  finishConnection: (portId: string) => {},
+  updatePortPosition: (portId: string, p: Point) => {},
 });
 
 interface ManagerProps {
-  initialNodes: { id: string; initialPos: Point }[];
   children: React.ReactNode;
 }
 
-const ConnectionManager: React.FC<ManagerProps> = ({ initialNodes, children }) => {
-  // — Store each node's current center position
-  const [nodePositions, setNodePositions] = useState<Record<string,Point>>(
-    () => Object.fromEntries(initialNodes.map(n => [n.id, n.initialPos]))
-  );
+const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
+  // Map each portId → its current center {x,y}
+  const [portPositions, setPortPositions] = useState<Record<string, Point>>({});
 
-  // — Store finalized connections as pairs of IDs
+  // List of finalized connections (fromPortId → toPortId)
   const [connections, setConnections] = useState<Connection[]>([]);
 
-  // — Remember which node we started dragging from (if any)
-  const [pendingFrom, setPendingFrom] = useState<string | null>(null);
+  // Which port are we currently dragging from?
+  const [pendingFromPort, setPendingFromPort] = useState<string | null>(null);
 
-  // Called when you mousedown on a node
-  const startConnection = (id: string) => {
-    setPendingFrom(id);
+  // Called by <Node> whenever a port’s center changes
+  const updatePortPosition = (portId: string, point: Point) => {
+    setPortPositions(prev => ({ ...prev, [portId]: point }));
   };
 
-  // Called when you mouseup on a node
-  const finishConnection = (id: string) => {
-    if (pendingFrom && pendingFrom !== id) {
-      setConnections(prev => [...prev, { from: pendingFrom, to: id }]);
+  // Called onMouseDown of a port
+  const startConnection = (portId: string) => {
+    setPendingFromPort(portId);
+  };
+
+  // Called onMouseUp of a port
+  const finishConnection = (portId: string) => {
+    if (pendingFromPort && pendingFromPort !== portId) {
+      setConnections(prev => [
+        ...prev,
+        { fromPortId: pendingFromPort, toPortId: portId },
+      ]);
     }
-    setPendingFrom(null);
-  };
-
-  // Called on every drag event to update the node's position
-  const updateNodePosition = (id: string, p: Point) => {
-    setNodePositions(prev => ({ ...prev, [id]: p }));
+    setPendingFromPort(null);
   };
 
   return (
-    <ConnectionContext.Provider value={{
-      startConnection,
-      finishConnection,
-      updateNodePosition
-    }}>
+    <ConnectionContext.Provider
+      value={{ startConnection, finishConnection, updatePortPosition }}
+    >
       {children}
 
-      {/* Draw all the connections on top */}
+      {/* Draw all the finalized connections here */}
       <SvgOverlay
         connections={connections}
-        nodePositions={nodePositions}
+        portPositions={portPositions}
       />
     </ConnectionContext.Provider>
   );

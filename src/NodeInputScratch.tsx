@@ -1,7 +1,6 @@
 import React from 'react';
 
 interface NodeInputProps {
-    ref: React.Ref<HTMLDivElement> | undefined
     id: string;
     value: number;
     connected: string | null;
@@ -13,7 +12,6 @@ interface NodeInputProps {
 }
 
 const NodeInput: React.FC<NodeInputProps> = ({
-    ref,
     id,
     value,
     connected,
@@ -24,11 +22,7 @@ const NodeInput: React.FC<NodeInputProps> = ({
     updateInput,
 }) => {
     return (
-        <div 
-            className='self-start'
-            key={outputId}
-            ref={ref}
-        >
+        <div className='self-start'>
             <input
                 id={id}
                 type='checkbox'
