@@ -36,6 +36,7 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
 
   // Called onMouseDown of a port
   const startConnection = (portId: string) => {
+    console.log(`startconnection ${portId}`);
     setPendingFromPort(portId);
   };
 

@@ -10,6 +10,9 @@ interface NodeInputProps {
     setSelectedOutputId: (value: string | null) => void;
     inputConnectioninFunction: () => (value: any) => void;
     updateInput: (value: number) => void;
+    
+    onMouseDown: React.MouseEventHandler<HTMLDivElement> | undefined
+    onMouseUp: React.MouseEventHandler<HTMLDivElement> | undefined
 }
 
 const NodeInput: React.FC<NodeInputProps> = ({
@@ -22,28 +25,37 @@ const NodeInput: React.FC<NodeInputProps> = ({
     setSelectedOutputId,
     inputConnectioninFunction,
     updateInput,
+    onMouseDown,
+    onMouseUp
 }) => {
     return (
         <div 
-            className='self-start'
-            key={outputId}
-            ref={ref}
+            className='self-start flex'
+            //onMouseDown={onMouseDown}
         >
-            <input
-                id={id}
-                type='checkbox'
-                className='mr-2 ml-0'
-                onClick={() => {
-                    setNewConnectionInputUpdater(inputConnectioninFunction);
-                    setSelectedOutputId(outputId);
-                }}
-            />
-            <input
-                className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                type='number'
-                value={value}
-                onChange={e => updateInput(Number(e.target.value))}
-            />
+            <div
+                key={outputId}
+                ref={ref}
+            >
+                <input
+                    onMouseUp={onMouseUp}
+                    id={id}
+                    type='checkbox'
+                    className='mr-2 ml-0'
+                    onClick={() => {
+                        setNewConnectionInputUpdater(inputConnectioninFunction);
+                        setSelectedOutputId(outputId);
+                    }}
+                />
+            </div>
+            <div>
+                <input
+                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
+                    type='number'
+                    value={value}
+                    onChange={e => updateInput(Number(e.target.value))}
+                />
+            </div>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -7,6 +7,11 @@ import {
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import NodeInput from './NodeInput';
 import type { Point } from './types';
+import { ConnectionContext } from './ConnectionManager';
+import Checkbox from '@mui/material/Checkbox';
+import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
+import CircleIcon from '@mui/icons-material/Circle';
+import IconButton from '@mui/material/IconButton';
 
 interface AddNumbersProps {
     name: string;
@@ -16,7 +21,7 @@ interface AddNumbersProps {
     setNewConnectionInputUpdater: (value: any) => void;
     setNewConnectionOutputDependencyUpdater: (f: (value: any) => void) => void;
     selectedOutputId: string | null;
-    setSelectedOutputId: (value: any) => void; 
+    setSelectedOutputId: (value: any) => void;
 }
 
 // type Input = {
@@ -25,55 +30,67 @@ interface AddNumbersProps {
 //     connected: string | null;
 // }
 
-const AddNumbers: React.FC<AddNumbersProps> = ({ 
-    name, 
-    label, 
-    description, 
-    width, 
-    setNewConnectionInputUpdater, 
+const AddNumbers: React.FC<AddNumbersProps> = ({
+    name,
+    label,
+    description,
+    width,
+    setNewConnectionInputUpdater,
     setNewConnectionOutputDependencyUpdater,
     selectedOutputId,
     setSelectedOutputId,
 }) => {
 
-    
-  
+
+    const { startConnection, finishConnection, updatePortPosition } =
+        useContext(ConnectionContext);
+
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
- // On mount, report each port’s initial center to ConnectionManager:
-  useEffect(() => {
-    // We know the node’s starting top‐left is (initialPos.x - width/2, initialPos.y - height/2).
-    // But to be safe, we’ll call updateAllPortPositions() after mounting so getBoundingClientRect()
-    // is accurate for each port.
-    updateAllPortPositions();
-    // eslint‐disable‐line react-hooks/exhaustive-deps
-  }, []);
+    // On mount, report each port’s initial center to ConnectionManager:
+    useEffect(() => {
+        // We know the node’s starting top‐left is (initialPos.x - width/2, initialPos.y - height/2).
+        // But to be safe, we’ll call updateAllPortPositions() after mounting so getBoundingClientRect()
+        // is accurate for each port.
+        updateAllPortPositions();
+        // eslint‐disable‐line react-hooks/exhaustive-deps
+    }, []);
 
 
-  // Called on each drag event; recalculate **every** port’s absolute center:
-  const onDragHandler = (_: DraggableEvent, data: DraggableData) => {
-    // data.x/data.y = new top-left corner of this node container
-    updateAllPortPositions();
-  };
-  
+    // Called on each drag event; recalculate **every** port’s absolute center:
+    const onDragHandler = (_: DraggableEvent, data: DraggableData) => {
+        // data.x/data.y = new top-left corner of this node container
+        updateAllPortPositions();
+    };
 
-  // Loop over every ref in portRefs.current and call updatePortPosition(portId, center).
-  const updateAllPortPositions = () => {
-    Object.entries(portRefs.current).forEach(([portId, el]) => {
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        const center: Point = {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
-        };
-        updatePortPosition(portId, center);
-      }
-    });
-  };
-  
-  const updatePortPosition = (portId: string, p: Point) => {
-    console.log(`updatPortPosition ${portId} ${p}`)
-  }
+
+    // Loop over every ref in portRefs.current and call updatePortPosition(portId, center).
+    const updateAllPortPositions = () => {
+        Object.entries(portRefs.current).forEach(([portId, el]) => {
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                const center: Point = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                };
+                updatePortPosition(portId, center);
+            }
+        });
+    };
+
+    // When user mouses down on a port, begin a new connection from that port
+    const onMouseDownPort = (portId: string) => {
+        startConnection(portId);
+    };
+
+    // When user releases mouse on a port, finish connection to that port
+    const onMouseUpPort = (portId: string) => {
+        finishConnection(portId);
+    };
+
+    //   const updatePortPosition = (portId: string, p: Point) => {
+    //     console.log(`updatPortPosition ${portId} ${p}`)
+    //   }
 
     const inputsData = [
         {
@@ -138,14 +155,14 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     const nodeRef = React.useRef<any>(null);
 
     return (
-        <Draggable 
+        <Draggable
             nodeRef={nodeRef}
 
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
         >
             <div ref={nodeRef}>
-                <Card 
+                <Card
                     className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
@@ -167,6 +184,8 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                             ref={el => {
                                                 portRefs.current[input.id] = el
                                             }}
+                                            onMouseDown={() => onMouseDownPort(input.id)}
+                                            onMouseUp={() => onMouseUpPort(input.id)}
                                             id={input.id}
                                             value={input.value}
                                             connected={input.connected}
@@ -179,21 +198,44 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                     )
                                 })
                             }
-                            <div className='self-end text-right'
-                                key={outputId}
-                                ref={el => {
-                                    portRefs.current[outputId] = el
-                                }}
+                            <div className='self-end text-right flex ml-0'
+                                // key={outputId}
+                                // ref={el => {
+                                //     portRefs.current[outputId] = el
+                                // }}
+                                //onMouseDown={() => onMouseDownPort(outputId)}
+                                //onMouseUp={() => onMouseUpPort(outputId)}
                             >
-                                <input
-                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                    type='text'
-                                    value={output}
-                                    readOnly
-                                /> 
-                                <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' onClick={
-                                    () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
-                                } />
+                                <div>
+                                    <input
+                                        className='w-1/3 py-0 px-2 bg-white text-black rounded'
+                                        type='text'
+                                        value={output}
+                                        readOnly
+                                    />
+                                </div>
+                                <div
+                                    className='!-mr-2 !px-0'
+                                    onMouseDown={() => onMouseDownPort(outputId)}
+                                    key={outputId}
+                                    ref={el => {
+                                        portRefs.current[outputId] = el
+                                    }}
+                                >
+                                    <Checkbox
+                                        className='!py-0'
+                                        icon={<CircleIcon />}
+                                        size='small'
+                                        checkedIcon={<CircleIcon />}
+                                        onClick={
+                                            () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
+                                        }
+                                    />
+
+                                    {/* <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' onClick={
+                                        () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
+                                    } /> */}
+                                </div>
                             </div>
                         </div>
                     </CardContent>

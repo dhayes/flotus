@@ -30,10 +30,12 @@ function App() {
 
   return (
     <Stage>
+      <ConnectionManager>
+        <Engine />
+      </ConnectionManager>
         {/* <Node name="node1" label="Node 1" description="This is the first node." />
         <Node name="node2" label="Node 2" description="This is the second node." /> */}
         {/* <AddNumbers name="addNumbers" label="Add Numbers" description="This node adds two numbers." width={200} /> */}
-        <Engine />
     </Stage>
   )
 
