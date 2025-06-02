@@ -36,16 +36,22 @@ const NodeInput: React.FC<NodeInputProps> = ({
             <div
                 key={outputId}
                 ref={ref}
+                onMouseUp={() => {
+                        alert('qqq')
+                        setNewConnectionInputUpdater(inputConnectioninFunction);
+                        setSelectedOutputId(outputId);
+                }}
             >
                 <input
                     onMouseUp={onMouseUp}
                     id={id}
                     type='checkbox'
                     className='mr-2 ml-0'
-                    onClick={() => {
-                        setNewConnectionInputUpdater(inputConnectioninFunction);
-                        setSelectedOutputId(outputId);
-                    }}
+                    // onMouseUpCapture={() => {
+                    //     alert('qqq')
+                    //     setNewConnectionInputUpdater(inputConnectioninFunction);
+                    //     setSelectedOutputId(outputId);
+                    // }}
                 />
             </div>
             <div>

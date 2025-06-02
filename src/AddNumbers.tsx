@@ -154,10 +154,12 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     // Todo: switch to different draggable library that doesn't require a ref
     const nodeRef = React.useRef<any>(null);
 
+    const [dragDisabled, setDragDisabled] = useState(false);
+
     return (
         <Draggable
             nodeRef={nodeRef}
-
+            disabled={dragDisabled}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
         >
@@ -199,6 +201,8 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                 })
                             }
                             <div className='self-end text-right flex ml-0'
+                                onMouseEnter={() => setDragDisabled(true)}
+                                onMouseLeave={() => setDragDisabled(false)}
                                 // key={outputId}
                                 // ref={el => {
                                 //     portRefs.current[outputId] = el
@@ -227,7 +231,7 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                         icon={<CircleIcon />}
                                         size='small'
                                         checkedIcon={<CircleIcon />}
-                                        onClick={
+                                        onMouseDown={
                                             () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
                                         }
                                     />

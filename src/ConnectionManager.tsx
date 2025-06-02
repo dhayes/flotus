@@ -1,5 +1,5 @@
 // ConnectionManager.tsx
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import SvgOverlay from './SvgOverlay';
 
 export type Point = { x: number; y: number };
@@ -29,6 +29,51 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
   // Which port are we currently dragging from?
   const [pendingFromPort, setPendingFromPort] = useState<string | null>(null);
 
+  const [mousePosition, setMousePosition] = useState<Point | null>(null)
+
+  useEffect(() => {
+
+    const onMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+
+    const onMouseUp = (e: MouseEvent) => {
+      setPortPositions(prev => {
+        setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
+        const keyToRemove: string = 'mouse'
+        const { [keyToRemove]: position, ...newPositions } = prev
+        return newPositions
+      })
+    }
+
+    const onMouseDown = (e: MouseEvent) => {
+      setPortPositions(prev => {
+        const keyToRemove: string = 'mouse'
+        const { [keyToRemove]: position, ...newPositions } = prev
+        return newPositions
+      })
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousedown', onMouseDown);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousedown', onMouseDown);
+    }
+  }, [])
+
+  useEffect(() => {
+      setPortPositions(prev => (
+        mousePosition ? { ...prev, ['mouse']: mousePosition } : prev
+      ));
+  }, [mousePosition]);
+
   // Called by <Node> whenever a port’s center changes
   const updatePortPosition = (portId: string, point: Point) => {
     setPortPositions(prev => ({ ...prev, [portId]: point }));
@@ -36,13 +81,17 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
 
   // Called onMouseDown of a port
   const startConnection = (portId: string) => {
-    console.log(`startconnection ${portId}`);
-    setPendingFromPort(portId);
+    setPendingFromPort(() => portId);
+      setConnections(prev => [
+        ...prev,
+        { fromPortId: portId, toPortId: 'mouse' },
+      ]);
   };
 
   // Called onMouseUp of a port
   const finishConnection = (portId: string) => {
     if (pendingFromPort && pendingFromPort !== portId) {
+      setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
       setConnections(prev => [
         ...prev,
         { fromPortId: pendingFromPort, toPortId: portId },
@@ -50,6 +99,7 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
     }
     setPendingFromPort(null);
   };
+
 
   return (
     <ConnectionContext.Provider
