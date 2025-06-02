@@ -133,9 +133,10 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
     const [dependencies, setDependencies] = useState<Array<(value: any) => void>>([]);
 
     const addDependency = (f: (value: any) => void) => {
+        f(output);
         setDependencies(previousState => {
             return [...previousState, f]
-        })
+        });
     }
     const addDependencyFunction = () => {
         const f = (value: any) => {
