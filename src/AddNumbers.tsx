@@ -203,12 +203,6 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                             <div className='self-end text-right flex ml-0'
                                 onMouseEnter={() => setDragDisabled(true)}
                                 onMouseLeave={() => setDragDisabled(false)}
-                                // key={outputId}
-                                // ref={el => {
-                                //     portRefs.current[outputId] = el
-                                // }}
-                                //onMouseDown={() => onMouseDownPort(outputId)}
-                                //onMouseUp={() => onMouseUpPort(outputId)}
                             >
                                 <div>
                                     <input
@@ -235,10 +229,6 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
                                             () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
                                         }
                                     />
-
-                                    {/* <input id='outputCheckbox' type='checkbox' className='mr-0 ml-2' onClick={
-                                        () => setNewConnectionOutputDependencyUpdater(addDependencyFunction)
-                                    } /> */}
                                 </div>
                             </div>
                         </div>
