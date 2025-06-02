@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import React, { useContext, useEffect, useId, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -9,9 +9,7 @@ import NodeInput from './NodeInput';
 import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
 import Checkbox from '@mui/material/Checkbox';
-import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import CircleIcon from '@mui/icons-material/Circle';
-import IconButton from '@mui/material/IconButton';
 
 interface AddNumbersProps {
     name: string;
@@ -23,12 +21,6 @@ interface AddNumbersProps {
     selectedOutputId: string | null;
     setSelectedOutputId: (value: any) => void;
 }
-
-// type Input = {
-//     id: string;
-//     value: number;
-//     connected: string | null;
-// }
 
 const AddNumbers: React.FC<AddNumbersProps> = ({
     name,
@@ -47,24 +39,15 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    // On mount, report each port’s initial center to ConnectionManager:
     useEffect(() => {
-        // We know the node’s starting top‐left is (initialPos.x - width/2, initialPos.y - height/2).
-        // But to be safe, we’ll call updateAllPortPositions() after mounting so getBoundingClientRect()
-        // is accurate for each port.
         updateAllPortPositions();
-        // eslint‐disable‐line react-hooks/exhaustive-deps
     }, []);
 
 
-    // Called on each drag event; recalculate **every** port’s absolute center:
     const onDragHandler = (_: DraggableEvent, data: DraggableData) => {
-        // data.x/data.y = new top-left corner of this node container
         updateAllPortPositions();
     };
 
-
-    // Loop over every ref in portRefs.current and call updatePortPosition(portId, center).
     const updateAllPortPositions = () => {
         Object.entries(portRefs.current).forEach(([portId, el]) => {
             if (el) {
@@ -78,19 +61,13 @@ const AddNumbers: React.FC<AddNumbersProps> = ({
         });
     };
 
-    // When user mouses down on a port, begin a new connection from that port
     const onMouseDownPort = (portId: string) => {
         startConnection(portId);
     };
 
-    // When user releases mouse on a port, finish connection to that port
     const onMouseUpPort = (portId: string) => {
         finishConnection(portId);
     };
-
-    //   const updatePortPosition = (portId: string, p: Point) => {
-    //     console.log(`updatPortPosition ${portId} ${p}`)
-    //   }
 
     const inputsData = [
         {
