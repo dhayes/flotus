@@ -43,6 +43,8 @@ const Engine: React.FC<EngineProps> = (props) => {
         <div>
             { testNode1 }
             { testNode2 }
+            { testNode2 }
+            { testNode2 }
             <button 
                 onClick={() => {
                     if (selectedInputId && addDependencyFunction && updateInputFunction) {

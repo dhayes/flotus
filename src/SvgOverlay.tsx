@@ -66,7 +66,7 @@ const SvgOverlay: React.FC<Props> = ({ connections, portPositions }) => {
           <path
             key={idx}
             d={d}
-            stroke="lime"
+            stroke="grey"
             strokeWidth={3}
             fill="none"
             style={{ filter: 'drop-shadow(0 0 2px black)' }}
