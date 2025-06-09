@@ -24,6 +24,7 @@ interface SomeNodeProps {
     setSelectOutputId: (id: string | null) => void;
     selectedInputId: string | null;
     selectedOutputId: string | null;
+    style?: React.CSSProperties;
 }
 
 const SomeNode: React.FC<SomeNodeProps> = ({
@@ -39,6 +40,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     setSelectOutputId,
     selectedInputId,
     selectedOutputId,
+    style
 }) => {
 
     const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
@@ -49,7 +51,6 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     useEffect(() => {
         updateAllPortPositions();
     }, []);
-
 
     const onDragHandler = (_: DraggableEvent, data: DraggableData) => {
         updateAllPortPositions();
@@ -123,14 +124,13 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     const [dependencies, setDependencies] = useState<Record<string, ((value: any) => void)>>({});
 
     const addDependency = (id: string, f: (value: any) => void) => {
-        //f(output.value);
+        f(output.value);
         setDependencies(previousState => {
             return {
                 ...previousState,
                 [id]: f
             };
-        }
-        );
+        });
     };
 
     const addDependencyFunction = () => {
@@ -141,47 +141,20 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     };
 
     const removeDependency = (id: string) => {
-        console.log(`Removing dependency for ${id}`);
-        console.log(dependencies);
         if (!dependencies) return;
         setDependencies(previousState => {
             const newState = { ...previousState };
-            console.log(`Removing dependency for ${id} from`, previousState);
-            console.log(`Removing dependency for ${id} from`, newState);
             delete newState[id];
-            console.log(`Removing dependency for ${id} from`, newState);
             return newState;
         });
     };
-
-    useEffect(() => {
-       console.log(dependencies);
-        // if (removeDependencyFunction) {
-        //     setRemoveDependencyFunction(() => (id: string) => {
-        //         removeDependency(id);
-        //     }
-        //     );
-        // } else {
-        //     setRemoveDependencyFunction(() => undefined);
-        // } 
-    }, [dependencies, removeDependencyFunction, setRemoveDependencyFunction]);
-
-
-    // const removeDependencyFunction = () => {
-    //     if (!removeDependencyFunction) return;
-    //     return (id: string) => {
-    //         removeDependency(id);
-    //     };
-    // };
-
+    
     useEffect(() => {
         if (dependencies) {
             Object.values(dependencies).forEach((f) => {
                 f(output.value);
-            });
-        }
-    }
-        , [output]);
+        });
+    }}, [output]);
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
@@ -196,7 +169,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
         >
-            <div ref={nodeRef}>
+            <div ref={nodeRef} style={style}>
                 <Card
                     className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
                     style={width ? { width: `${width}px` } : { width: '200px' }}
@@ -221,13 +194,10 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     setSelectInputId(input.id);
                                                     setUpdateInputFunction(updateInputFunction);
                                                     onMouseUpPort(input.id);
-                                                    console.log('input div mouse up', input.id);
-                                                    console.log(dependencies)
                                                 }}
                                                 onMouseDown={() => {
                                                     removeDependencyFunction?.(input.id);
-                                                    setSelectInputId(input.id);
-                                                    //deleteConnection(input.id);
+                                                    setSelectInputId(null);
                                                     moveEndPoint(input.id);
                                                     setDragDisabled(true)
                                                 }}
@@ -237,11 +207,8 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     type='checkbox'
                                                     className='mr-2 ml-0'
                                                     onChange={() => {
-                                                        console.log('checkbox change', input.id);
                                                         removeDependencyFunction?.(input.id);
-                                                    console.log(dependencies)
                                                     }}
-                                                // Add any other handlers as needed
                                                 />
                                             </div>
                                             <div>
@@ -284,7 +251,6 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                         checkedIcon={<CircleIcon />}
                                         onMouseDown={
                                             () => {
-                                                console.log('checkbox mouse down', output.id);
                                                 setSelectOutputId(output.id);
                                                 setAddDependencyFunction(addDependencyFunction)
                                                 setRemoveDependencyFunction(() => (id: string) => {
