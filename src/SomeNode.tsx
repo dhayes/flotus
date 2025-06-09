@@ -187,6 +187,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                     return (
                                         <div key={input.id} className="flex items-center">
                                             <div
+                                                className='!-ml-2 !px-0'
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
@@ -202,14 +203,25 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     setDragDisabled(true)
                                                 }}
                                             >
-                                                <input
+                                                <Checkbox
+                                                    className='!py-0'
+                                                    icon={<CircleIcon />}
+                                                    size='small'
+                                                    checkedIcon={<CircleIcon />}
+                                                    onMouseUp={
+                                                        () => {
+                                                            removeDependencyFunction?.(input.id);
+                                                        }
+                                                    }
+                                                />
+                                                {/* <input
                                                     id={input.id}
                                                     type='checkbox'
                                                     className='mr-2 ml-0'
                                                     onChange={() => {
                                                         removeDependencyFunction?.(input.id);
                                                     }}
-                                                />
+                                                /> */}
                                             </div>
                                             <div>
                                                 <input
@@ -224,7 +236,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                 })}
 
 
-                            <div className='self-end text-right flex ml-0'
+                            <div className='self-end text-right flex !ml-0 pl-0'
                                 onMouseEnter={() => setDragDisabled(true)}
                                 onMouseLeave={() => setDragDisabled(false)}
                             >
@@ -237,20 +249,19 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                     />
                                 </div>
                                 <div
-                                    className='!-mr-2 !px-0'
+                                    className='!mr-0 !px-2 flex items-center'
                                     onMouseDown={() => onMouseDownPort(output.id)}
                                     key={output.id}
                                     ref={el => {
                                         portRefs.current[output.id] = el
                                     }}
                                 >
-                                    <Checkbox
-                                        className='!py-0'
-                                        icon={<CircleIcon />}
-                                        size='small'
-                                        checkedIcon={<CircleIcon />}
+                                    <button 
+                                        className="!w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 !cursor-pointer"
+                                        aria-label="Circle button"
                                         onMouseDown={
                                             () => {
+                                                setDragDisabled(true);
                                                 setSelectOutputId(output.id);
                                                 setAddDependencyFunction(addDependencyFunction)
                                                 setRemoveDependencyFunction(() => (id: string) => {
@@ -258,7 +269,12 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                 });
                                             }
                                         }
-                                    />
+                                        onMouseLeave={() => {
+                                            setDragDisabled(false);
+                                        }
+                                        }
+                                    >
+                                    </button>
                                 </div>
                             </div>
                         </div>
