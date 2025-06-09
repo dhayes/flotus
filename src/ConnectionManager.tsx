@@ -13,6 +13,8 @@ export const ConnectionContext = createContext({
   startConnection: (portId: string) => {},
   finishConnection: (portId: string) => {},
   updatePortPosition: (portId: string, p: Point) => {},
+  deleteConnection: (toPortId: string) => {},
+  moveEndPoint: (toPortId: string) => {},
 });
 
 interface ManagerProps {
@@ -100,10 +102,36 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
     setPendingFromPort(null);
   };
 
+  const deleteConnection = (toPortId: string) => {
+    setConnections(prev => prev.filter(
+      connection => !(connection.toPortId === toPortId)
+    ));
+  };
+
+  const getOtherPortId = (portId: string) => {
+    const connection =
+      connections.find(conn => conn.fromPortId === portId) ||
+      connections.find(conn => conn.toPortId === portId);
+
+    if (!connection) return null;
+    if (connection.fromPortId === portId) {
+      return connection.toPortId;
+    }
+    if (connection.toPortId === portId) {
+      return connection.fromPortId;
+    }
+    return null;
+  };
+
+  const moveEndPoint = (toPortId: string) => {
+    const otherPortId = getOtherPortId(toPortId);
+    deleteConnection(toPortId);
+    startConnection(otherPortId || '');
+  }
 
   return (
     <ConnectionContext.Provider
-      value={{ startConnection, finishConnection, updatePortPosition }}
+      value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint }}
     >
       {children}
 

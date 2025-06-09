@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AddNumbers from './AddNumbers';
+import SomeNode from './SomeNode';
 
 interface EngineProps {
     // Define your props here
@@ -7,57 +8,45 @@ interface EngineProps {
 
 const Engine: React.FC<EngineProps> = (props) => {
 
-    const [newConnectionInputUpdater, setNewConnectionInputUpdater] = useState<((value: any) => void)>();
-
-    const [newConnectionOutputDependencyUpdater, setNewConnectionOutputDependencyUpdater] = useState<((value: any) => void)>()
-    
+    const [addDependencyFunction, setAddDependencyFunction] = useState<(id: string, f: (value: any) => void) => void>();
+    const [removeDependencyFunction, setRemoveDependencyFunction] = useState<(value: any) => void>();
+    const [updateInputFunction, setUpdateInputFunction] = useState<(value: any) => void>();
+    const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
-    
-    interface InputSetter {
-        (value: any): void;
-    }
 
-    interface DependencyUpdater {
-        (value: any): void;
-    }
-
-    function createConnection(inputSetter: InputSetter, dependencyUpdater: DependencyUpdater): void {
-        dependencyUpdater(inputSetter);
-    }
-
-    const testNode1 = <AddNumbers 
+    const testNode1 = <SomeNode
         name='test1' 
         label='test1' 
-        setNewConnectionInputUpdater={setNewConnectionInputUpdater}
-        setNewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        setAddDependencyFunction={setAddDependencyFunction}
+        setRemoveDependencyFunction={setRemoveDependencyFunction}
+        removeDependencyFunction={removeDependencyFunction}
+        setUpdateInputFunction={setUpdateInputFunction}
+        setSelectInputId={setSelectedInputId}
+        setSelectOutputId={setSelectedOutputId}
+        selectedInputId={selectedInputId}
         selectedOutputId={selectedOutputId}
-        setSelectedOutputId={setSelectedOutputId}
     />
-    const testNode2 = <AddNumbers 
+    const testNode2 = <SomeNode
         name='test2' 
         label='test2' 
-        setNewConnectionInputUpdater={setNewConnectionInputUpdater}
-        setNewConnectionOutputDependencyUpdater={setNewConnectionOutputDependencyUpdater}
+        setAddDependencyFunction={setAddDependencyFunction}
+        setRemoveDependencyFunction={setRemoveDependencyFunction}
+        removeDependencyFunction={removeDependencyFunction}
+        setUpdateInputFunction={setUpdateInputFunction}
+        setSelectInputId={setSelectedInputId}
+        setSelectOutputId={setSelectedOutputId}
+        selectedInputId={selectedInputId}
         selectedOutputId={selectedOutputId}
-        setSelectedOutputId={setSelectedOutputId}
     />
 
     return (
         <div>
             { testNode1 }
             { testNode2 }
-            <button onClick={() => {
-                console.log("clicked")   
-                console.log(newConnectionInputUpdater)   
-                newConnectionInputUpdater && newConnectionInputUpdater(7)} 
-            } 
-            /> 
             <button 
                 onClick={() => {
-                    if (newConnectionInputUpdater && newConnectionOutputDependencyUpdater) {
-                        createConnection(newConnectionInputUpdater, newConnectionOutputDependencyUpdater);
-                    } else {
-                        console.warn("Connection updaters are not set.");
+                    if (selectedInputId && addDependencyFunction && updateInputFunction) {
+                        addDependencyFunction(selectedInputId, updateInputFunction);
                     }
                 }}>
                     New Connection
