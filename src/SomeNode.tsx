@@ -185,9 +185,12 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                         updateInput(index, value);
                                     };
                                     return (
-                                        <div key={input.id} className="flex items-center">
+                                        <div 
+                                            key={input.id} 
+                                            className='self-end text-left flex !mr-0 pr-0'
+                                        >
                                             <div
-                                                className='!-ml-2 !px-0'
+                                                className='!ml-0 !px-0'
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
@@ -203,17 +206,15 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     setDragDisabled(true)
                                                 }}
                                             >
-                                                <Checkbox
-                                                    className='!py-0'
-                                                    icon={<CircleIcon />}
-                                                    size='small'
-                                                    checkedIcon={<CircleIcon />}
+                                                <button
+                                                    className="!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 !cursor-pointer"
+                                                    aria-label="Circle button"
                                                     onMouseUp={
                                                         () => {
                                                             removeDependencyFunction?.(input.id);
                                                         }
                                                     }
-                                                />
+                                                ></button>
                                                 {/* <input
                                                     id={input.id}
                                                     type='checkbox'
@@ -223,7 +224,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     }}
                                                 /> */}
                                             </div>
-                                            <div>
+                                            <div className='my-1'>
                                                 <input
                                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                                     type='number'
