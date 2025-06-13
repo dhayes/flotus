@@ -5,11 +5,8 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
-import NodeInput from './NodeInput';
 import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
-import Checkbox from '@mui/material/Checkbox';
-import CircleIcon from '@mui/icons-material/Circle';
 
 interface SomeNodeProps {
     name: string;
@@ -160,14 +157,14 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     // Todo: switch to different draggable library that doesn't require a ref
     const nodeRef = React.useRef<any>(null);
 
-    const [dragDisabled, setDragDisabled] = useState(false);
-
     return (
         <Draggable
+            defaultClassName='inline-block'
             nodeRef={nodeRef}
-            disabled={dragDisabled}
+            //disabled={dragDisabled}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
+            cancel='button'
         >
             <div ref={nodeRef} style={style}>
                 <Card
@@ -203,7 +200,6 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                     removeDependencyFunction?.(input.id);
                                                     setSelectInputId(null);
                                                     moveEndPoint(input.id);
-                                                    setDragDisabled(true)
                                                 }}
                                             >
                                                 <button
@@ -215,14 +211,6 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                         }
                                                     }
                                                 ></button>
-                                                {/* <input
-                                                    id={input.id}
-                                                    type='checkbox'
-                                                    className='mr-2 ml-0'
-                                                    onChange={() => {
-                                                        removeDependencyFunction?.(input.id);
-                                                    }}
-                                                /> */}
                                             </div>
                                             <div className='my-1'>
                                                 <input
@@ -237,10 +225,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                 })}
 
 
-                            <div className='self-end text-right flex !ml-0 pl-0'
-                                onMouseEnter={() => setDragDisabled(true)}
-                                onMouseLeave={() => setDragDisabled(false)}
-                            >
+                            <div className='self-end text-right flex !ml-0 pl-0'>
                                 <div>
                                     <input
                                         className='w-1/3 py-0 px-2 bg-white text-black rounded'
@@ -262,17 +247,12 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                         aria-label="Circle button"
                                         onMouseDown={
                                             () => {
-                                                setDragDisabled(true);
                                                 setSelectOutputId(output.id);
                                                 setAddDependencyFunction(addDependencyFunction)
                                                 setRemoveDependencyFunction(() => (id: string) => {
                                                     removeDependency(id);
                                                 });
                                             }
-                                        }
-                                        onMouseLeave={() => {
-                                            setDragDisabled(false);
-                                        }
                                         }
                                     >
                                     </button>
