@@ -17,7 +17,7 @@ interface SomeNodeProps {
     setRemoveDependencyFunction: React.Dispatch<React.SetStateAction<((id: string) => void) | undefined>>;
     removeDependencyFunction: ((id: string) => void) | undefined;
     setUpdateInputFunction: (value: any) => void;
-    setSelectInputId: (id: string | null) => void;
+    setSelectedInputId: (id: string | null) => void;
     setSelectOutputId: (id: string | null) => void;
     selectedInputId: string | null;
     selectedOutputId: string | null;
@@ -33,8 +33,8 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     setRemoveDependencyFunction,
     removeDependencyFunction,
     setUpdateInputFunction,
-    setSelectInputId,
-    setSelectOutputId,
+    setSelectedInputId: setSelectedInputId,
+    setSelectOutputId: setSelectedOutputId,
     selectedInputId,
     selectedOutputId,
     style
@@ -74,7 +74,13 @@ const SomeNode: React.FC<SomeNodeProps> = ({
         finishConnection(portId);
     };
 
-    const inputsData = [
+    type Input = {
+        id: string;
+        value: any;
+        connected: string | null
+    }
+
+    const inputsData: Array<Input> = [
         {
             id: useId(),
             value: 0,
@@ -94,7 +100,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
             const updated = [...prev];
             updated[index] = {
                 ...updated[index],
-                value: value
+                value: value,
             };
             return updated;
         });
@@ -191,25 +197,26 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
-                                                onMouseUp={() => {
-                                                    setSelectInputId(input.id);
-                                                    setUpdateInputFunction(updateInputFunction);
-                                                    onMouseUpPort(input.id);
-                                                }}
-                                                onMouseDown={() => {
-                                                    removeDependencyFunction?.(input.id);
-                                                    setSelectInputId(null);
-                                                    moveEndPoint(input.id);
-                                                }}
                                             >
                                                 <button
-                                                    className="!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 !cursor-pointer"
+                                                    className="!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer"
                                                     aria-label="Circle button"
                                                     onMouseUp={
                                                         () => {
+                                                            console.log(`input ${input.id} mouse up`)
+                                                            setSelectedInputId(input.id);
+                                                            setUpdateInputFunction(updateInputFunction);
+                                                            onMouseUpPort(input.id);
+                                                            updateInput(index, input.value);
                                                             removeDependencyFunction?.(input.id);
                                                         }
                                                     }
+                                                    onMouseDown={() => {
+                                                            console.log(`input ${input.id} mouse down`)
+                                                            removeDependencyFunction?.(input.id);
+                                                            setSelectedInputId(null);
+                                                            moveEndPoint(input.id);
+                                                    }}
                                                 ></button>
                                             </div>
                                             <div className='my-1'>
@@ -236,7 +243,6 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                 </div>
                                 <div
                                     className='!mr-0 !px-2 flex items-center'
-                                    onMouseDown={() => onMouseDownPort(output.id)}
                                     key={output.id}
                                     ref={el => {
                                         portRefs.current[output.id] = el
@@ -247,13 +253,19 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                         aria-label="Circle button"
                                         onMouseDown={
                                             () => {
-                                                setSelectOutputId(output.id);
+                                                console.log(`output ${output.id} mouse down`)
+                                                onMouseDownPort(output.id)
+                                                setSelectedOutputId(output.id);
+                                                console.log(output)
                                                 setAddDependencyFunction(addDependencyFunction)
                                                 setRemoveDependencyFunction(() => (id: string) => {
                                                     removeDependency(id);
                                                 });
                                             }
                                         }
+                                        onMouseUp={() => {
+                                            console.log(`output ${output.id} mouse up`)
+                                        }}
                                     >
                                     </button>
                                 </div>

@@ -1,5 +1,4 @@
 import React, { useEffect, useId, useState, type JSX } from 'react';
-import AddNumbers from './AddNumbers';
 import SomeNode from './SomeNode';
 import { useMousePosition } from './useMousePosition';
 
@@ -22,7 +21,7 @@ const Engine: React.FC<EngineProps> = (props) => {
         setRemoveDependencyFunction={setRemoveDependencyFunction}
         removeDependencyFunction={removeDependencyFunction}
         setUpdateInputFunction={setUpdateInputFunction}
-        setSelectInputId={setSelectedInputId}
+        setSelectedInputId={setSelectedInputId}
         setSelectOutputId={setSelectedOutputId}
         selectedInputId={selectedInputId}
         selectedOutputId={selectedOutputId}
@@ -34,7 +33,7 @@ const Engine: React.FC<EngineProps> = (props) => {
         setRemoveDependencyFunction={setRemoveDependencyFunction}
         removeDependencyFunction={removeDependencyFunction}
         setUpdateInputFunction={setUpdateInputFunction}
-        setSelectInputId={setSelectedInputId}
+        setSelectedInputId={setSelectedInputId}
         setSelectOutputId={setSelectedOutputId}
         selectedInputId={selectedInputId}
         selectedOutputId={selectedOutputId}
@@ -45,12 +44,10 @@ const Engine: React.FC<EngineProps> = (props) => {
         // You can initialize any state or perform side effects here
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
                         addDependencyFunction(selectedInputId, updateInputFunction);
-                        setSelectedOutputId(null);
-                        setSelectedInputId(null);
         }
         console.log('Engine component mounted');
     }
-    , [selectedInputId, selectedOutputId, addDependencyFunction, removeDependencyFunction, updateInputFunction]);
+    , [updateInputFunction]);
 
     const a = [0, 2, 3].map((i) =>// {
                // return ( 
@@ -62,7 +59,7 @@ const Engine: React.FC<EngineProps> = (props) => {
                         setRemoveDependencyFunction={setRemoveDependencyFunction}
                         removeDependencyFunction={removeDependencyFunction}
                         setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectInputId={setSelectedInputId}
+                        setSelectedInputId={setSelectedInputId}
                         setSelectOutputId={setSelectedOutputId}
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
@@ -73,7 +70,6 @@ const Engine: React.FC<EngineProps> = (props) => {
    const i = 5; 
    const [nodes, setNodes] = useState<JSX.Element[]>(a);
    const position = useMousePosition();
-   console.log('Mouse position:', position);
         const b = <SomeNode
                         key={useId()}
                         name={`test${i}`}
@@ -82,7 +78,7 @@ const Engine: React.FC<EngineProps> = (props) => {
                         setRemoveDependencyFunction={setRemoveDependencyFunction}
                         removeDependencyFunction={removeDependencyFunction}
                         setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectInputId={setSelectedInputId}
+                        setSelectedInputId={setSelectedInputId}
                         setSelectOutputId={setSelectedOutputId}
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
@@ -90,7 +86,6 @@ const Engine: React.FC<EngineProps> = (props) => {
                     />
     return (
         <div>
-            
             <button 
                 onClick={() => {
                   setNodes([...nodes, b]);
