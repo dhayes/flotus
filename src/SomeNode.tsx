@@ -18,7 +18,7 @@ interface SomeNodeProps {
     removeDependencyFunction: ((id: string) => void) | undefined;
     setUpdateInputFunction: (value: any) => void;
     setSelectedInputId: (id: string | null) => void;
-    setSelectOutputId: (id: string | null) => void;
+    setSelectedOutputId: (id: string | null) => void;
     selectedInputId: string | null;
     selectedOutputId: string | null;
     style?: React.CSSProperties;
@@ -33,8 +33,8 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     setRemoveDependencyFunction,
     removeDependencyFunction,
     setUpdateInputFunction,
-    setSelectedInputId: setSelectedInputId,
-    setSelectOutputId: setSelectedOutputId,
+    setSelectedInputId,
+    setSelectedOutputId,
     selectedInputId,
     selectedOutputId,
     style
@@ -178,7 +178,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label}
+                        {label} <br></br> {selectedOutputId}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>

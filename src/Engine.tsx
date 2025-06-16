@@ -14,31 +14,6 @@ const Engine: React.FC<EngineProps> = (props) => {
     const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
 
-    const testNode1 = <SomeNode
-        name='test1' 
-        label='test1' 
-        setAddDependencyFunction={setAddDependencyFunction}
-        setRemoveDependencyFunction={setRemoveDependencyFunction}
-        removeDependencyFunction={removeDependencyFunction}
-        setUpdateInputFunction={setUpdateInputFunction}
-        setSelectedInputId={setSelectedInputId}
-        setSelectOutputId={setSelectedOutputId}
-        selectedInputId={selectedInputId}
-        selectedOutputId={selectedOutputId}
-    />
-    const testNode2 = <SomeNode
-        name='test2' 
-        label='test2' 
-        setAddDependencyFunction={setAddDependencyFunction}
-        setRemoveDependencyFunction={setRemoveDependencyFunction}
-        removeDependencyFunction={removeDependencyFunction}
-        setUpdateInputFunction={setUpdateInputFunction}
-        setSelectedInputId={setSelectedInputId}
-        setSelectOutputId={setSelectedOutputId}
-        selectedInputId={selectedInputId}
-        selectedOutputId={selectedOutputId}
-    />
-
     useEffect(() => {
         // This effect runs once when the component mounts
         // You can initialize any state or perform side effects here
@@ -49,51 +24,44 @@ const Engine: React.FC<EngineProps> = (props) => {
     }
     , [updateInputFunction]);
 
-    const a = [0, 2, 3].map((i) =>// {
-               // return ( 
-                    <SomeNode
-                        key={i}
-                        name={`test${i}`}
-                        label={`test${i}`}
-                        setAddDependencyFunction={setAddDependencyFunction}
-                        setRemoveDependencyFunction={setRemoveDependencyFunction}
-                        removeDependencyFunction={removeDependencyFunction}
-                        setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectedInputId={setSelectedInputId}
-                        setSelectOutputId={setSelectedOutputId}
-                        selectedInputId={selectedInputId}
-                        selectedOutputId={selectedOutputId}
-                    />
-              //  )
-        //    }
-        )
-   const i = 5; 
-   const [nodes, setNodes] = useState<JSX.Element[]>(a);
+    type NodeData = { id: string; name: string; label: string; };
+
+    const [nodes, setNodes] = useState<NodeData[]>([
+        { id: crypto.randomUUID(), name: 'test0', label: 'test0' },
+        { id: crypto.randomUUID(), name: 'test2', label: 'test2' },
+        { id: crypto.randomUUID(), name: 'test3', label: 'test3' },
+    ]);
+
+    const addNode = () => {
+        setNodes(prev => [
+            ...prev,
+            { id: crypto.randomUUID(), name: `test${prev.length}`, label: `test${prev.length}` },
+        ]);
+    }
+   
    const position = useMousePosition();
-        const b = <SomeNode
-                        key={useId()}
-                        name={`test${i}`}
-                        label={`test${i}`}
-                        setAddDependencyFunction={setAddDependencyFunction}
-                        setRemoveDependencyFunction={setRemoveDependencyFunction}
-                        removeDependencyFunction={removeDependencyFunction}
-                        setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectedInputId={setSelectedInputId}
-                        setSelectOutputId={setSelectedOutputId}
-                        selectedInputId={selectedInputId}
-                        selectedOutputId={selectedOutputId}
-                        style={{ position: 'absolute', top: `${position.y}px`, left: `${position.x}px` }}
-                    />
+    
     return (
         <div>
             <button 
-                onClick={() => {
-                  setNodes([...nodes, b]);
-                }}>
-                    New Connection
+                onClick={addNode}>
+                    New Node
             </button>
-             {nodes}
-
+            {nodes.map(nodeData => (
+                <SomeNode
+                    key={nodeData.id}
+                    name={nodeData.name}
+                    label={nodeData.label}
+                    setAddDependencyFunction={setAddDependencyFunction}
+                    setRemoveDependencyFunction={setRemoveDependencyFunction}
+                    removeDependencyFunction={removeDependencyFunction}
+                    setUpdateInputFunction={setUpdateInputFunction}
+                    setSelectedInputId={setSelectedInputId}
+                    setSelectedOutputId={setSelectedOutputId}
+                    selectedInputId={selectedInputId}
+                    selectedOutputId={selectedOutputId}
+                />
+            ))}
         </div>
     );
 };
