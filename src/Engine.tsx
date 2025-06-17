@@ -4,6 +4,7 @@ import { useMousePosition } from './useMousePosition';
 import NodePlot from './NodePlot';
 import PlotDraggableNode from './PlotDraggableNode';
 import Simple3DPlot from './PlotDraggableNode';
+import NodeSlider from './NodeSlider';
 
 interface EngineProps {
     // Define your props here
@@ -67,6 +68,7 @@ const Engine: React.FC<EngineProps> = (props) => {
                 />
             ))}
             {
+                <>
                <NodePlot
                     key={useId()}
                     label="Plot Node"
@@ -80,6 +82,20 @@ const Engine: React.FC<EngineProps> = (props) => {
                     selectedInputId={selectedInputId}
                     selectedOutputId={selectedOutputId}
                 />
+                <NodeSlider
+                    key={useId()}
+                    label="Plot Node"
+                    setAddDependencyFunction={setAddDependencyFunction}
+                    addDependencyFunction={addDependencyFunction}
+                    setRemoveDependencyFunction={setRemoveDependencyFunction}
+                    removeDependencyFunction={removeDependencyFunction}
+                    setUpdateInputFunction={setUpdateInputFunction}
+                    setSelectedInputId={setSelectedInputId}
+                    setSelectedOutputId={setSelectedOutputId}
+                    selectedInputId={selectedInputId}
+                    selectedOutputId={selectedOutputId}
+                />
+                </>
             }
         </div>
     );
