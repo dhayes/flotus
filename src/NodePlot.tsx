@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useId, useRef, useState } from 'react';
+import React, { useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -7,8 +7,10 @@ import {
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
+import Plotly from 'plotly.js-basic-dist';
+import type * as PlotlyType from 'plotly.js';
 
-interface NodeProps {
+interface NodePlotProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -23,7 +25,7 @@ interface NodeProps {
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const NodePlot: React.FC<NodePlotProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -182,6 +184,47 @@ const Node: React.FC<NodeProps> = ({
     }, []);
 
 
+    const plotRef = useRef<HTMLDivElement>(null);
+    const N = 50;
+    const x = Array.from({ length: N }, (_, i) => -10 + (20 * i) / (N - 1));
+    const y = [...x];
+
+    const computeZ = () =>
+        x.map(xi =>
+            y.map(yj => {
+                const r = Math.sqrt(xi * xi + yj * yj);
+                return r === 0 ? 1 : Math.sin(r) / r;
+            })
+        );
+
+        
+        const plotly = Plotly;
+        const data: Partial<Plotly.PlotData>[] = [
+            { type: 'surface', x, y, z: computeZ() },
+        ];
+
+        const layout: Partial<Plotly.Layout> = {
+            title: { text: '3D Sinc Surface' },
+            scene: { zaxis: { range: [-0.5, 1] } },
+            autosize: true,
+            margin: { l: 0, r: 0, t: 30, b: 0 },
+        };
+
+        const config = {
+            staticPlot: true, // disables all interactivity to prevent pointer conflict
+        };
+
+    useLayoutEffect(() => {
+  if (!plotRef.current) return;
+
+  plotly.newPlot(plotRef.current, data, layout, config);
+
+  return () => {
+    Plotly.purge(plotRef.current!);
+  };
+}, []);
+
+
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
     const nodeRef = React.useRef<any>(null);
@@ -192,7 +235,7 @@ const Node: React.FC<NodeProps> = ({
             nodeRef={nodeRef}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
-            cancel='button'
+            cancel="button,input"
         >
             <div ref={nodeRef} style={style}>
                 <Card
@@ -204,65 +247,13 @@ const Node: React.FC<NodeProps> = ({
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            {
-                                inputs.map((input, index) => {
-                                    const updateInputFunction = () => (value: number) => {
-                                        updateInput(index, {value: value});
-                                    };
-                                    return (
-                                        <div 
-                                            key={input.id} 
-                                            className='self-end text-left flex !mr-0 pr-0'
-                                        >
-                                            <div
-                                                className='!ml-0 !px-0'
-                                                ref={el => {
-                                                    portRefs.current[input.id] = el;
-                                                }}
-                                            >
-                                                <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
-                                                    aria-label="Circle button"
-                                                    onMouseUp={() => {
-                                                        setSelectedInputId(input.id);
-                                                        setUpdateInputFunction(updateInputFunction);
-                                                        onMouseUpPort(input.id);
-                                                        updateInput(index, {value: input.value});
-                                                        updateInput(index, {connected: selectedOutputId});
-                                                        if (addDependencyFunction && removeDependencyFunction) {
-                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
-                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
-                                                        }
-                                                    }}
-                                                    onMouseDown={() => {
-                                                        setSelectedOutputId(input.connected)
-                                                        setSelectedInputId(input.id);
-                                                        moveEndPoint(input.id);
-                                                        if (input.removeDependencyFunction) {
-                                                            input.removeDependencyFunction(input.id)
-                                                            setRemoveDependencyFunction(() => input.removeDependencyFunction)
-                                                            updateInput(index, {connected: null})
-                                                        }
-                                                        if (input.addDependencyFunction) {
-                                                            setAddDependencyFunction(() => input.addDependencyFunction)
-                                                        }
-                                                    }}
-                                                ></button>
-                                            </div>
-                                            <div className='my-1'>
-                                                <input
-                                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                                    type={input.connected? 'text' : 'number'}
-                                                    readOnly={input.connected? true : false}
-                                                    value={input.value}
-                                                    onChange={e => updateInput(index, {value: Number(e.target.value)})}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-
-
+                            <div className='w-full' style={{ height: '300px' }}>
+                                <div
+                                    ref={plotRef}
+                                    style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+                                    className='plotly'
+                                />
+                            </div>
                             <div className='self-end text-right flex !ml-0 pl-0'>
                                 <div>
                                     <input
@@ -307,4 +298,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default Node;
+export default React.memo(NodePlot);

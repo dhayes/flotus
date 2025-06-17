@@ -1,6 +1,9 @@
 import React, { useEffect, useId, useState, type JSX } from 'react';
 import SomeNode from './SomeNode';
 import { useMousePosition } from './useMousePosition';
+import NodePlot from './NodePlot';
+import PlotDraggableNode from './PlotDraggableNode';
+import Simple3DPlot from './PlotDraggableNode';
 
 interface EngineProps {
     // Define your props here
@@ -41,7 +44,22 @@ const Engine: React.FC<EngineProps> = (props) => {
     }
    
    const position = useMousePosition();
-    
+
+    const addNumbers = (a: number, b: number): number => {
+        return a + b;
+    }
+
+    const g: ((a: number, b: number) => number) = (a, b) => a+b; 
+
+    type ExtractReturn<T> =
+  T extends (...args: any[]) => infer R
+    ? R
+    : never;
+
+    type RT = ExtractReturn<typeof g>;
+    const q: RT = 5
+    console.log(typeof q);
+
     return (
         <div>
             <button 
@@ -63,6 +81,9 @@ const Engine: React.FC<EngineProps> = (props) => {
                     selectedOutputId={selectedOutputId}
                 />
             ))}
+            {
+               <Simple3DPlot/>
+            }
         </div>
     );
 };
