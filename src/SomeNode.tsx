@@ -221,7 +221,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
@@ -280,7 +280,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                     }}
                                 >
                                     <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
                                             onMouseDownPort(output.id)

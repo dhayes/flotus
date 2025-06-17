@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState, type JSX } from 'react';
-import SomeNode from './SomeNode';
+import Node from './Node';
 import { useMousePosition } from './useMousePosition';
 import NodePlot from './NodePlot';
 import PlotDraggableNode from './PlotDraggableNode';
@@ -43,22 +43,7 @@ const Engine: React.FC<EngineProps> = (props) => {
         ]);
     }
    
-   const position = useMousePosition();
-
-    const addNumbers = (a: number, b: number): number => {
-        return a + b;
-    }
-
-    const g: ((a: number, b: number) => number) = (a, b) => a+b; 
-
-    type ExtractReturn<T> =
-  T extends (...args: any[]) => infer R
-    ? R
-    : never;
-
-    type RT = ExtractReturn<typeof g>;
-    const q: RT = 5
-    console.log(typeof q);
+    const position = useMousePosition();
 
     return (
         <div>
@@ -67,7 +52,7 @@ const Engine: React.FC<EngineProps> = (props) => {
                     New Node
             </button>
             {nodes.map(nodeData => (
-                <SomeNode
+                <Node
                     key={nodeData.id}
                     label={nodeData.label}
                     setAddDependencyFunction={setAddDependencyFunction}

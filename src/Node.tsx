@@ -8,6 +8,14 @@ import Draggable, { type DraggableData, type DraggableEvent } from 'react-dragga
 import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
 
+type Input = {
+    id: string;
+    value: any;
+    connected: string | null;
+    removeDependencyFunction: ((id: string) => void) | undefined;
+    addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
+}
+
 interface NodeProps {
     label: string;
     width?: number;
@@ -72,14 +80,6 @@ const Node: React.FC<NodeProps> = ({
         finishConnection(portId);
     };
 
-    type Input = {
-        id: string;
-        value: any;
-        connected: string | null;
-        removeDependencyFunction: ((id: string) => void) | undefined;
-        addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
-    }
-
     const inputsData: Array<Input> = [
         {
             id: useId(),
@@ -108,8 +108,10 @@ const Node: React.FC<NodeProps> = ({
         return a + b;
     }
 
+    const outputID = useId();
+
     const [output, setOutput] = useState({
-        id: useId(),
+        id: outputID,
         value: addNumbers(inputs[0].value, inputs[1].value),
         connected: null,
     })
@@ -134,12 +136,7 @@ const Node: React.FC<NodeProps> = ({
         });
     };
 
-    const makeAddDependencyFunction = () => {
-        const f = (id: string, f: (value: any) => void) => {
-            addDependency(id, f);
-        };
-        return f;
-    };
+    const makeAddDependencyFunction = () => (id: string, f: (value: any) => void) => addDependency(id, f);
 
     const removeDependency = (id: string) => {
         setDependencies(previousState => {
@@ -149,19 +146,11 @@ const Node: React.FC<NodeProps> = ({
         });
     };
 
-    const makeRemoveDependencyFunction = () => {
-        const f = (id: string) => {
-            removeDependency(id);
-        };
-        return f;
-    };
+    const makeRemoveDependencyFunction = () => (id: string) => removeDependency(id)
 
     useEffect(() => {
-        if (dependencies) {
-            Object.values(dependencies).forEach((f) => {
-                f(output.value);
-        });
-    }}, [output]);
+            Object.values(dependencies).forEach((f) => f(output.value))
+    }, [output.value]);
 
     useEffect(() => {
         const handleMouseUp = (e: MouseEvent) => {
@@ -180,7 +169,6 @@ const Node: React.FC<NodeProps> = ({
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, []);
-
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
@@ -221,7 +209,7 @@ const Node: React.FC<NodeProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
@@ -280,7 +268,7 @@ const Node: React.FC<NodeProps> = ({
                                     }}
                                 >
                                     <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
                                             onMouseDownPort(output.id)
@@ -307,4 +295,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default Node;
+export default React.memo(Node);
