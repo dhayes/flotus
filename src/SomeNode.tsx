@@ -202,6 +202,28 @@ const SomeNode: React.FC<SomeNodeProps> = ({
         });
     }}, [output]);
 
+    useEffect(() => {
+        const handleMouseUp = (e: MouseEvent) => {
+            if (!nodeRef.current?.contains(e.target as Node)) {
+                // Mouse up happened outside the node
+                console.log('MouseUp outside SomeNode');
+                setAddDependencyFunction(undefined)
+                setRemoveDependencyFunction(undefined)
+                setUpdateInputFunction(undefined)
+                setSelectedInputId(null)
+                setSelectedOutputId(null)
+                // ... any cleanup
+            }
+        };
+
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
     const nodeRef = React.useRef<any>(null);
@@ -256,11 +278,11 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                                 updateInputAddDependencyFunction(index, addDependencyFunction);
                                                                 updateInputRemoveDependencyFunction(index, removeDependencyFunction);
                                                             }
-
                                                         }
                                                     }
                                                     onMouseDown={() => {
                                                             console.log(`input ${input.id} mouse down`)
+                                                            setSelectedOutputId(input.connected)
                                                             setSelectedInputId(input.id);
                                                             moveEndPoint(input.id);
                                                             console.log(input);
@@ -268,13 +290,12 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                             console.log(dependencies)
                                                             if (input.removeDependencyFunction) {
                                                                 input.removeDependencyFunction(input.id)
+                                                                setRemoveDependencyFunction(() => input.removeDependencyFunction)
+                                                                updateInputConnected(index, null)
                                                             }
                                                             if (input.addDependencyFunction) {
                                                                 setAddDependencyFunction(() => input.addDependencyFunction)
                                                             }
-                                                            //     input.removeDependencyFunction(input.id);
-                                                            //     setAddDependencyFunction(input.addDependencyFunction)
-                                                            // }
                                                     }}
                                                 ></button>
                                             </div>
@@ -322,6 +343,11 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                         }
                                         onMouseUp={() => {
                                             console.log(`output ${output.id} mouse up`)
+                                            setAddDependencyFunction(undefined)
+                                            setRemoveDependencyFunction(undefined)
+                                            setUpdateInputFunction(undefined)
+                                            setSelectedInputId(null)
+                                            setSelectedOutputId(null)
                                         }}
                                     >
                                     </button>
