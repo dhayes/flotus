@@ -252,7 +252,8 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                             <div className='my-1'>
                                                 <input
                                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                                    type='number'
+                                                    type={input.connected? 'text' : 'number'}
+                                                    readOnly={input.connected? true : false}
                                                     value={input.value}
                                                     onChange={e => updateInput(index, {value: Number(e.target.value)})}
                                                 />
