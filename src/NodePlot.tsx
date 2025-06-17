@@ -150,7 +150,7 @@ const Node: React.FC<NodeProps> = ({
     const makeRemoveDependencyFunction = () => (id: string) => removeDependency(id)
 
     useEffect(() => {
-            Object.values(dependencies).forEach((f) => f(output.value))
+        Object.values(dependencies).forEach((f) => f(output.value))
     }, [output.value]);
 
     useEffect(() => {
@@ -172,54 +172,53 @@ const Node: React.FC<NodeProps> = ({
     }, []);
 
 
-  const plotRef = useRef<HTMLDivElement>(null);
+    const plotRef = useRef<HTMLDivElement>(null);
 
-useLayoutEffect(() => {
-    const N = 40;
-    const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step))
-      .fill(start)
-      .map((x, y) => x + y * step)
-    const x = range(-10, 10, 0.2)
-    const y = range(-10, 10, 0.2)
-    const z = x.map(xi =>
-      y.map(yj => {
-        const r = Math.sqrt(inputs[0].value * xi * xi + inputs[1].value * yj * yj);
-        return r === 0 ? 1 : Math.sin(r) / r;
-      })
-    );
-    console.log(z)
-    const data: Partial<Data>[] = [{
-      z: z,
-      type: 'surface',
-      showscale: false
-    }];
-    const layout = {
-      autosize: false,
-      width: 230,
-      height: 230,
-      margin: {
-        l: 5,
-        r: 5,
-        b: 5,
-        t: 5,
-      }
-    };
+    useLayoutEffect(() => {
+        const N = 40;
+        const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step))
+            .fill(start)
+            .map((x, y) => x + y * step)
+        const x = range(-10, 10, 0.2)
+        const y = range(-10, 10, 0.2)
+        const z = x.map(xi =>
+            y.map(yj => {
+                const r = Math.sqrt(inputs[0].value * xi * xi + inputs[1].value * yj * yj);
+                return r === 0 ? 1 : Math.sin(r) / r;
+            })
+        );
+        console.log(z)
+        const data: Partial<Data>[] = [{
+            z: z,
+            type: 'surface',
+            showscale: false
+        }];
+        const layout = {
+            autosize: true,
+            width: 230,
+            height: 230,
+            margin: {
+                l: 5,
+                r: 5,
+                b: 5,
+                t: 0,
+            }
+        };
 
-    Plotly.newPlot(
-      plotRef.current!,
-      data,
-      layout,
-      {
-        staticPlot: false,
-        displayModeBar: false,
-      }
-    );
+        Plotly.newPlot(
+            plotRef.current!,
+            data,
+            layout,
+            {
+                staticPlot: false,
+                displayModeBar: false,
+            }
+        );
 
-    return () => {
-      Plotly.purge(plotRef.current!);
-    };
-    console.log(inputs)
-  }, [inputs]);
+        return () => {
+            Plotly.purge(plotRef.current!);
+        };
+    }, [inputs]);
 
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
@@ -247,11 +246,11 @@ useLayoutEffect(() => {
                             {
                                 inputs.map((input, index) => {
                                     const updateInputFunction = () => (value: number) => {
-                                        updateInput(index, {value: value});
+                                        updateInput(index, { value: value });
                                     };
                                     return (
-                                        <div 
-                                            key={input.id} 
+                                        <div
+                                            key={input.id}
                                             className='self-end text-left flex !mr-0 pr-0'
                                         >
                                             <div
@@ -267,11 +266,11 @@ useLayoutEffect(() => {
                                                         setSelectedInputId(input.id);
                                                         setUpdateInputFunction(updateInputFunction);
                                                         onMouseUpPort(input.id);
-                                                        updateInput(index, {value: input.value});
-                                                        updateInput(index, {connected: selectedOutputId});
+                                                        updateInput(index, { value: input.value });
+                                                        updateInput(index, { connected: selectedOutputId });
                                                         if (addDependencyFunction && removeDependencyFunction) {
-                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
-                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
+                                                            updateInput(index, { addDependencyFunction: addDependencyFunction });
+                                                            updateInput(index, { removeDependencyFunction: removeDependencyFunction });
                                                         }
                                                     }}
                                                     onMouseDown={() => {
@@ -281,7 +280,7 @@ useLayoutEffect(() => {
                                                         if (input.removeDependencyFunction) {
                                                             input.removeDependencyFunction(input.id)
                                                             setRemoveDependencyFunction(() => input.removeDependencyFunction)
-                                                            updateInput(index, {connected: null})
+                                                            updateInput(index, { connected: null })
                                                         }
                                                         if (input.addDependencyFunction) {
                                                             setAddDependencyFunction(() => input.addDependencyFunction)
@@ -292,27 +291,27 @@ useLayoutEffect(() => {
                                             <div className='my-1'>
                                                 <input
                                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                                    type={input.connected? 'text' : 'number'}
-                                                    readOnly={input.connected? true : false}
+                                                    type={input.connected ? 'text' : 'number'}
+                                                    readOnly={input.connected ? true : false}
                                                     value={input.value}
-                                                    onChange={e => updateInput(index, {value: Number(e.target.value)})}
+                                                    onChange={e => updateInput(index, { value: Number(e.target.value) })}
                                                 />
                                             </div>
                                         </div>
                                     );
                                 })}
 
-                        <div className='flex flex-col !items-center !gap-0'>
+                            <div className='flex flex-col !items-center !gap-0'>
 
                                 <div
                                     ref={plotRef}
-                                    style={{pointerEvents: 'auto'}}
-                                    className='flex 1 1 auto self-center'
+                                    style={{ pointerEvents: 'auto' }}
+                                    className='flex 1 1 auto self-center shadow-[0px_4px_6px_4px_rgba(0,_0,_0,_0.35)]'
                                 />
 
                             </div>
 
-{/*                             <div className='self-end text-right flex !ml-0 pl-0'>
+                            {/*                             <div className='self-end text-right flex !ml-0 pl-0'>
                                 <div>
                                     <input
                                         className='w-1/3 py-0 px-2 bg-white text-black rounded'
