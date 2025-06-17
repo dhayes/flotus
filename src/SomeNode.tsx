@@ -9,11 +9,10 @@ import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
 
 interface SomeNodeProps {
-    name: string;
     label: string;
-    description?: string;
     width?: number;
-    setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>
+    setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
+    addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
     setRemoveDependencyFunction: React.Dispatch<React.SetStateAction<((id: string) => void) | undefined>>;
     removeDependencyFunction: ((id: string) => void) | undefined;
     setUpdateInputFunction: (value: any) => void;
@@ -25,11 +24,10 @@ interface SomeNodeProps {
 }
 
 const SomeNode: React.FC<SomeNodeProps> = ({
-    name,
     label,
-    description,
     width,
     setAddDependencyFunction,
+    addDependencyFunction,
     setRemoveDependencyFunction,
     removeDependencyFunction,
     setUpdateInputFunction,
@@ -77,7 +75,9 @@ const SomeNode: React.FC<SomeNodeProps> = ({
     type Input = {
         id: string;
         value: any;
-        connected: string | null
+        connected: string | null;
+        removeDependencyFunction: ((id: string) => void) | undefined;
+        addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
     }
 
     const inputsData: Array<Input> = [
@@ -85,11 +85,15 @@ const SomeNode: React.FC<SomeNodeProps> = ({
             id: useId(),
             value: 0,
             connected: null,
+            removeDependencyFunction: undefined,
+            addDependencyFunction: undefined
         },
         {
             id: useId(),
             value: 0,
             connected: null,
+            removeDependencyFunction: undefined,
+            addDependencyFunction: undefined
         }
     ]
 
@@ -106,6 +110,39 @@ const SomeNode: React.FC<SomeNodeProps> = ({
         });
     };
 
+    const updateInputConnected = (index: number, connected: string | null) => {
+        setInputs(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                connected: connected,
+            };
+            return updated;
+        });
+    };
+    
+    const updateInputAddDependencyFunction = (index: number, addDependencyFunction: (id: string, f: (value: any) => void) => void) => {
+        setInputs(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                addDependencyFunction: addDependencyFunction
+            };
+            return updated;
+        });
+    };
+
+    const updateInputRemoveDependencyFunction = (index: number, removeDependencyFunction: (id: string) => void) => {
+        setInputs(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                removeDependencyFunction: removeDependencyFunction
+            };
+            return updated;
+        });
+    };
+    
     const addNumbers = (a: number, b: number): number => {
         return a + b;
     }
@@ -126,7 +163,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
 
     const [dependencies, setDependencies] = useState<Record<string, ((value: any) => void)>>({});
 
-    const addDependency = (id: string, f: (value: any) => void) => {
+    const addDependency = (id: string, f: ((value: any) => void)) => {
         f(output.value);
         setDependencies(previousState => {
             return {
@@ -136,22 +173,28 @@ const SomeNode: React.FC<SomeNodeProps> = ({
         });
     };
 
-    const addDependencyFunction = () => {
-        const f = (id: string, func: (value: any) => void) => {
-            addDependency(id, func);
+    const makeAddDependencyFunction = () => {
+        const f = (id: string, f: (value: any) => void) => {
+            addDependency(id, f);
         };
         return f;
     };
 
     const removeDependency = (id: string) => {
-        if (!dependencies) return;
         setDependencies(previousState => {
-            const newState = { ...previousState };
-            delete newState[id];
-            return newState;
+            const updatedState = { ...previousState };
+            delete updatedState[id];
+            return updatedState;
         });
     };
-    
+
+    const makeRemoveDependencyFunction = () => {
+        const f = (id: string) => {
+            removeDependency(id);
+        };
+        return f;
+    };
+
     useEffect(() => {
         if (dependencies) {
             Object.values(dependencies).forEach((f) => {
@@ -178,7 +221,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label} <br></br> {selectedOutputId}
+                        {label} - {selectedOutputId}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
@@ -199,7 +242,7 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className="!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer"
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                                     aria-label="Circle button"
                                                     onMouseUp={
                                                         () => {
@@ -208,14 +251,30 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                                             setUpdateInputFunction(updateInputFunction);
                                                             onMouseUpPort(input.id);
                                                             updateInput(index, input.value);
-                                                            removeDependencyFunction?.(input.id);
+                                                            updateInputConnected(index, selectedOutputId);
+                                                            if (addDependencyFunction && removeDependencyFunction) {
+                                                                updateInputAddDependencyFunction(index, addDependencyFunction);
+                                                                updateInputRemoveDependencyFunction(index, removeDependencyFunction);
+                                                            }
+
                                                         }
                                                     }
                                                     onMouseDown={() => {
                                                             console.log(`input ${input.id} mouse down`)
-                                                            removeDependencyFunction?.(input.id);
-                                                            setSelectedInputId(null);
+                                                            setSelectedInputId(input.id);
                                                             moveEndPoint(input.id);
+                                                            console.log(input);
+                                                            console.log("deps:");
+                                                            console.log(dependencies)
+                                                            if (input.removeDependencyFunction) {
+                                                                input.removeDependencyFunction(input.id)
+                                                            }
+                                                            if (input.addDependencyFunction) {
+                                                                setAddDependencyFunction(() => input.addDependencyFunction)
+                                                            }
+                                                            //     input.removeDependencyFunction(input.id);
+                                                            //     setAddDependencyFunction(input.addDependencyFunction)
+                                                            // }
                                                     }}
                                                 ></button>
                                             </div>
@@ -249,18 +308,16 @@ const SomeNode: React.FC<SomeNodeProps> = ({
                                     }}
                                 >
                                     <button 
-                                        className="!w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 !cursor-pointer"
+                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                        //className="!w-4 !aspect-square !rounded-full !bg-gray-600 !hover:bg-gray-700 !p-0 !border-0 !cursor-pointer"
                                         aria-label="Circle button"
                                         onMouseDown={
                                             () => {
                                                 console.log(`output ${output.id} mouse down`)
                                                 onMouseDownPort(output.id)
                                                 setSelectedOutputId(output.id);
-                                                console.log(output)
-                                                setAddDependencyFunction(addDependencyFunction)
-                                                setRemoveDependencyFunction(() => (id: string) => {
-                                                    removeDependency(id);
-                                                });
+                                                setAddDependencyFunction(makeAddDependencyFunction)
+                                                setRemoveDependencyFunction(makeRemoveDependencyFunction)
                                             }
                                         }
                                         onMouseUp={() => {

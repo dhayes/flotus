@@ -9,20 +9,21 @@ interface EngineProps {
 const Engine: React.FC<EngineProps> = (props) => {
 
     const [addDependencyFunction, setAddDependencyFunction] = useState<(id: string, f: (value: any) => void) => void>();
-    const [removeDependencyFunction, setRemoveDependencyFunction] = useState<(value: any) => void>();
+    const [removeDependencyFunction, setRemoveDependencyFunction] = useState<((id: string) => void) | undefined>(undefined);
     const [updateInputFunction, setUpdateInputFunction] = useState<(value: any) => void>();
     const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
 
     useEffect(() => {
-        // This effect runs once when the component mounts
-        // You can initialize any state or perform side effects here
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
-                        addDependencyFunction(selectedInputId, updateInputFunction);
+            console.log(`Connecting output → input: ${selectedOutputId} → ${selectedInputId}`);
+            addDependencyFunction(selectedInputId, updateInputFunction);
+            setSelectedInputId(null);
+            setAddDependencyFunction(undefined);
+            setRemoveDependencyFunction(undefined);
+            setUpdateInputFunction(undefined);
         }
-        console.log('Engine component mounted');
-    }
-    , [updateInputFunction]);
+    }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
     type NodeData = { id: string; name: string; label: string; };
 
@@ -50,9 +51,9 @@ const Engine: React.FC<EngineProps> = (props) => {
             {nodes.map(nodeData => (
                 <SomeNode
                     key={nodeData.id}
-                    name={nodeData.name}
                     label={nodeData.label}
                     setAddDependencyFunction={setAddDependencyFunction}
+                    addDependencyFunction={addDependencyFunction}
                     setRemoveDependencyFunction={setRemoveDependencyFunction}
                     removeDependencyFunction={removeDependencyFunction}
                     setUpdateInputFunction={setUpdateInputFunction}
