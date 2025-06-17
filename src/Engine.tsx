@@ -67,7 +67,19 @@ const Engine: React.FC<EngineProps> = (props) => {
                 />
             ))}
             {
-               <Simple3DPlot/>
+               <NodePlot
+                    key={useId()}
+                    label="Plot Node"
+                    setAddDependencyFunction={setAddDependencyFunction}
+                    addDependencyFunction={addDependencyFunction}
+                    setRemoveDependencyFunction={setRemoveDependencyFunction}
+                    removeDependencyFunction={removeDependencyFunction}
+                    setUpdateInputFunction={setUpdateInputFunction}
+                    setSelectedInputId={setSelectedInputId}
+                    setSelectedOutputId={setSelectedOutputId}
+                    selectedInputId={selectedInputId}
+                    selectedOutputId={selectedOutputId}
+                />
             }
         </div>
     );

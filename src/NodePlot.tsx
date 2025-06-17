@@ -7,10 +7,17 @@ import {
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
 import { ConnectionContext } from './ConnectionManager';
-import Plotly from 'plotly.js-basic-dist';
-import type * as PlotlyType from 'plotly.js';
+import Plotly, { Data } from 'plotly.js-dist-min';
 
-interface NodePlotProps {
+type Input = {
+    id: string;
+    value: any;
+    connected: string | null;
+    removeDependencyFunction: ((id: string) => void) | undefined;
+    addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
+}
+
+interface NodeProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -25,7 +32,7 @@ interface NodePlotProps {
     style?: React.CSSProperties;
 }
 
-const NodePlot: React.FC<NodePlotProps> = ({
+const Node: React.FC<NodeProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -74,14 +81,6 @@ const NodePlot: React.FC<NodePlotProps> = ({
         finishConnection(portId);
     };
 
-    type Input = {
-        id: string;
-        value: any;
-        connected: string | null;
-        removeDependencyFunction: ((id: string) => void) | undefined;
-        addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
-    }
-
     const inputsData: Array<Input> = [
         {
             id: useId(),
@@ -110,8 +109,10 @@ const NodePlot: React.FC<NodePlotProps> = ({
         return a + b;
     }
 
+    const outputID = useId();
+
     const [output, setOutput] = useState({
-        id: useId(),
+        id: outputID,
         value: addNumbers(inputs[0].value, inputs[1].value),
         connected: null,
     })
@@ -136,12 +137,7 @@ const NodePlot: React.FC<NodePlotProps> = ({
         });
     };
 
-    const makeAddDependencyFunction = () => {
-        const f = (id: string, f: (value: any) => void) => {
-            addDependency(id, f);
-        };
-        return f;
-    };
+    const makeAddDependencyFunction = () => (id: string, f: (value: any) => void) => addDependency(id, f);
 
     const removeDependency = (id: string) => {
         setDependencies(previousState => {
@@ -151,19 +147,11 @@ const NodePlot: React.FC<NodePlotProps> = ({
         });
     };
 
-    const makeRemoveDependencyFunction = () => {
-        const f = (id: string) => {
-            removeDependency(id);
-        };
-        return f;
-    };
+    const makeRemoveDependencyFunction = () => (id: string) => removeDependency(id)
 
     useEffect(() => {
-        if (dependencies) {
-            Object.values(dependencies).forEach((f) => {
-                f(output.value);
-        });
-    }}, [output]);
+            Object.values(dependencies).forEach((f) => f(output.value))
+    }, [output.value]);
 
     useEffect(() => {
         const handleMouseUp = (e: MouseEvent) => {
@@ -184,45 +172,54 @@ const NodePlot: React.FC<NodePlotProps> = ({
     }, []);
 
 
-    const plotRef = useRef<HTMLDivElement>(null);
-    const N = 50;
-    const x = Array.from({ length: N }, (_, i) => -10 + (20 * i) / (N - 1));
-    const y = [...x];
+  const plotRef = useRef<HTMLDivElement>(null);
 
-    const computeZ = () =>
-        x.map(xi =>
-            y.map(yj => {
-                const r = Math.sqrt(xi * xi + yj * yj);
-                return r === 0 ? 1 : Math.sin(r) / r;
-            })
-        );
+useLayoutEffect(() => {
+    const N = 40;
+    const range = (start, stop, step = 1) => Array(Math.ceil((stop - start) / step))
+      .fill(start)
+      .map((x, y) => x + y * step)
+    const x = range(-10, 10, 0.2)
+    const y = range(-10, 10, 0.2)
+    const z = x.map(xi =>
+      y.map(yj => {
+        const r = Math.sqrt(inputs[0].value * xi * xi + inputs[1].value * yj * yj);
+        return r === 0 ? 1 : Math.sin(r) / r;
+      })
+    );
+    console.log(z)
+    const data: Partial<Data>[] = [{
+      z: z,
+      type: 'surface',
+      showscale: false
+    }];
+    const layout = {
+      autosize: false,
+      width: 230,
+      height: 230,
+      margin: {
+        l: 5,
+        r: 5,
+        b: 5,
+        t: 5,
+      }
+    };
 
-        
-        const plotly = Plotly;
-        const data: Partial<Plotly.PlotData>[] = [
-            { type: 'surface', x, y, z: computeZ() },
-        ];
+    Plotly.newPlot(
+      plotRef.current!,
+      data,
+      layout,
+      {
+        staticPlot: false,
+        displayModeBar: false,
+      }
+    );
 
-        const layout: Partial<Plotly.Layout> = {
-            title: { text: '3D Sinc Surface' },
-            scene: { zaxis: { range: [-0.5, 1] } },
-            autosize: true,
-            margin: { l: 0, r: 0, t: 30, b: 0 },
-        };
-
-        const config = {
-            staticPlot: true, // disables all interactivity to prevent pointer conflict
-        };
-
-    useLayoutEffect(() => {
-  if (!plotRef.current) return;
-
-  plotly.newPlot(plotRef.current, data, layout, config);
-
-  return () => {
-    Plotly.purge(plotRef.current!);
-  };
-}, []);
+    return () => {
+      Plotly.purge(plotRef.current!);
+    };
+    console.log(inputs)
+  }, [inputs]);
 
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
@@ -235,26 +232,87 @@ const NodePlot: React.FC<NodePlotProps> = ({
             nodeRef={nodeRef}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
-            cancel="button,input"
+            cancel='.plotly,button'
         >
             <div ref={nodeRef} style={style}>
                 <Card
                     className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
-                    style={width ? { width: `${width}px` } : { width: '200px' }}
+                    style={width ? { width: `260px` } : { width: '260px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
                         {label} - {selectedOutputId}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            <div className='w-full' style={{ height: '300px' }}>
+                            {
+                                inputs.map((input, index) => {
+                                    const updateInputFunction = () => (value: number) => {
+                                        updateInput(index, {value: value});
+                                    };
+                                    return (
+                                        <div 
+                                            key={input.id} 
+                                            className='self-end text-left flex !mr-0 pr-0'
+                                        >
+                                            <div
+                                                className='!ml-0 !px-0'
+                                                ref={el => {
+                                                    portRefs.current[input.id] = el;
+                                                }}
+                                            >
+                                                <button
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    aria-label="Circle button"
+                                                    onMouseUp={() => {
+                                                        setSelectedInputId(input.id);
+                                                        setUpdateInputFunction(updateInputFunction);
+                                                        onMouseUpPort(input.id);
+                                                        updateInput(index, {value: input.value});
+                                                        updateInput(index, {connected: selectedOutputId});
+                                                        if (addDependencyFunction && removeDependencyFunction) {
+                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
+                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
+                                                        }
+                                                    }}
+                                                    onMouseDown={() => {
+                                                        setSelectedOutputId(input.connected)
+                                                        setSelectedInputId(input.id);
+                                                        moveEndPoint(input.id);
+                                                        if (input.removeDependencyFunction) {
+                                                            input.removeDependencyFunction(input.id)
+                                                            setRemoveDependencyFunction(() => input.removeDependencyFunction)
+                                                            updateInput(index, {connected: null})
+                                                        }
+                                                        if (input.addDependencyFunction) {
+                                                            setAddDependencyFunction(() => input.addDependencyFunction)
+                                                        }
+                                                    }}
+                                                ></button>
+                                            </div>
+                                            <div className='my-1'>
+                                                <input
+                                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
+                                                    type={input.connected? 'text' : 'number'}
+                                                    readOnly={input.connected? true : false}
+                                                    value={input.value}
+                                                    onChange={e => updateInput(index, {value: Number(e.target.value)})}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                        <div className='flex flex-col !items-center !gap-0'>
+
                                 <div
                                     ref={plotRef}
-                                    style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
-                                    className='plotly'
+                                    style={{pointerEvents: 'auto'}}
+                                    className='flex 1 1 auto self-center'
                                 />
+
                             </div>
-                            <div className='self-end text-right flex !ml-0 pl-0'>
+
+{/*                             <div className='self-end text-right flex !ml-0 pl-0'>
                                 <div>
                                     <input
                                         className='w-1/3 py-0 px-2 bg-white text-black rounded'
@@ -271,7 +329,7 @@ const NodePlot: React.FC<NodePlotProps> = ({
                                     }}
                                 >
                                     <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '900' : '600'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
                                             onMouseDownPort(output.id)
@@ -289,7 +347,7 @@ const NodePlot: React.FC<NodePlotProps> = ({
                                     >
                                     </button>
                                 </div>
-                            </div>
+                            </div> /*} */}
                         </div>
                     </CardContent>
                 </Card>
@@ -298,4 +356,4 @@ const NodePlot: React.FC<NodePlotProps> = ({
     );
 };
 
-export default React.memo(NodePlot);
+export default React.memo(Node);
