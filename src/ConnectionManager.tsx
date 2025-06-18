@@ -18,10 +18,11 @@ export const ConnectionContext = createContext({
 });
 
 interface ManagerProps {
+  offset: Point;
   children: React.ReactNode;
 }
 
-const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
+const ConnectionManager: React.FC<ManagerProps> = ({ offset, children }) => {
   // Map each portId → its current center {x,y}
   const [portPositions, setPortPositions] = useState<Record<string, Point>>({});
 
@@ -136,6 +137,13 @@ const ConnectionManager: React.FC<ManagerProps> = ({ children }) => {
       {children}
 
       {/* Draw all the finalized connections here */}
+      <div style={{
+    transform: `translate(...) scale(...)`, // same as content
+    transformOrigin: 'top left',
+  }}>
+
+    
+  </div>
       <SvgOverlay
         connections={connections}
         portPositions={portPositions}
