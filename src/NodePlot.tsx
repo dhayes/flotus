@@ -6,8 +6,9 @@ import {
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
-import { ConnectionContext } from './ConnectionManager';
+import { ConnectionContext } from './Connections';
 import Plotly, { Data } from 'plotly.js-dist-min';
+import { StageContext } from './Stage';
 
 type Input = {
     id: string;
@@ -49,6 +50,8 @@ const Node: React.FC<NodeProps> = ({
 
     const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
         useContext(ConnectionContext);
+    
+    const {offsetX, offsetY, scale} = useContext(StageContext);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -163,13 +166,13 @@ const Node: React.FC<NodeProps> = ({
                 setSelectedOutputId(null)
             }
         };
-
+        updateAllPortPositions();
         document.addEventListener('mouseup', handleMouseUp);
 
         return () => {
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, []);
+    }, [offsetX, offsetY, scale]);
 
 
     const plotRef = useRef<HTMLDivElement>(null);
@@ -187,7 +190,6 @@ const Node: React.FC<NodeProps> = ({
                 return r === 0 ? 1 : Math.sin(r) / r;
             })
         );
-        console.log(z)
         const data: Partial<Data>[] = [{
             z: z,
             type: 'surface',

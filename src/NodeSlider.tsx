@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useId, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import Draggable from "react-draggable";
-import { ConnectionContext } from "./ConnectionManager";
+import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
+import { ConnectionContext } from "./Connections";
 import type { Point } from "./types";
+import { StageContext } from "./Stage";
 
 interface NodeProps {
   label: string;
@@ -41,6 +42,8 @@ const SliderNode: React.FC<NodeProps> = ({
   const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
     useContext(ConnectionContext);
 
+  const { offsetX, offsetY, scale } = useContext(StageContext);
+
   const inputId = useId();
   const outputId = useId();
   const nodeRef = useRef<any>(null);
@@ -71,39 +74,43 @@ const SliderNode: React.FC<NodeProps> = ({
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       if (!nodeRef.current?.contains(e.target as Node)) {
-        setAddDependencyFunction(undefined);
-        setRemoveDependencyFunction(undefined);
-        setUpdateInputFunction(undefined);
-        setSelectedInputId(null);
-        setSelectedOutputId(null);
+        setAddDependencyFunction(undefined)
+        setRemoveDependencyFunction(undefined)
+        setUpdateInputFunction(undefined)
+        setSelectedInputId(null)
+        setSelectedOutputId(null)
       }
     };
-    document.addEventListener("mouseup", handleMouseUp);
-    return () => document.removeEventListener("mouseup", handleMouseUp);
-  }, []);
+    updatePortPositions();
+    document.addEventListener('mouseup', handleMouseUp);
 
-  const updatePortPositions = () => {
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [offsetX, offsetY, scale]);
+
+  const updatePortPositions = (x = 0, y = 0) => {
     Object.entries(portRefs.current).forEach(([id, el]) => {
       if (el) {
         const rect = el.getBoundingClientRect();
         const center: Point = {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
+          x: rect.left + (rect.width / 2),
+          y: rect.top + (rect.height / 2),
         };
         updatePortPosition(id, center);
       }
     });
   };
 
-  const onDragHandler = () => {
-    updatePortPositions();
+  const onDragHandler = (e: DraggableEvent, data: DraggableData) => {
+    updatePortPositions(data.x, data.y);
   };
 
   return (
     <Draggable
       defaultClassName="inline-block draggable-item"
       nodeRef={nodeRef}
-      onDrag={onDragHandler}
+      onDrag={(e, data) => onDragHandler(e, data)}
       onStop={onDragHandler}
       cancel="button"
     >
@@ -145,11 +152,11 @@ const SliderNode: React.FC<NodeProps> = ({
                   }}
                 >
                   <button
-                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${
-                      Object.keys(dependencies).length > 0 ? "600" : "900"
-                    } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
+                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? "600" : "900"
+                      } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
                     aria-label="Output port"
                     onMouseDown={() => {
+                      console.log("slider")
                       startConnection(outputId);
                       setSelectedOutputId(outputId);
                       setAddDependencyFunction(() => (id, f) => addDependency(id, f));

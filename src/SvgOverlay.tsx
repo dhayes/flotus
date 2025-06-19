@@ -47,13 +47,17 @@ const SvgOverlay: React.FC<Props> = ({ connections, portPositions }) => {
   return (
     <svg
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        pointerEvents: 'none',
-        zIndex: 9999,
+        // position: 'fixed',
+        // top: 0,
+        // left: 0,
+        // width: '100vw',
+        // height: '100vh',
+        // pointerEvents: 'none',
+        // zIndex: 9999,
+        position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    zIndex: 0, // behind the nodes
       }}
     >
       {connections.map((conn, idx) => {

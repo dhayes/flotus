@@ -1,8 +1,8 @@
-// ConnectionManager.tsx
-import React, { createContext, useEffect, useState } from 'react';
-import SvgOverlay from './SvgOverlay';
-
-export type Point = { x: number; y: number };
+// Connections.tsx
+import React, { createContext, useCallback, useEffect, useState } from 'react';
+import type { Point } from './types';
+import { useMousePosition } from './useMousePosition';
+import { generateSshapedPath, transformPoint } from './lib/utils';
 
 export interface Connection {
   fromPortId: string;
@@ -17,12 +17,13 @@ export const ConnectionContext = createContext({
   moveEndPoint: (toPortId: string) => {},
 });
 
-interface ManagerProps {
-  offset: Point;
+interface ConnectionsProps {
   children: React.ReactNode;
+  offset: {x: number, y: number, scale: number};
 }
 
-const ConnectionManager: React.FC<ManagerProps> = ({ offset, children }) => {
+const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
+
   // Map each portId → its current center {x,y}
   const [portPositions, setPortPositions] = useState<Record<string, Point>>({});
 
@@ -32,44 +33,7 @@ const ConnectionManager: React.FC<ManagerProps> = ({ offset, children }) => {
   // Which port are we currently dragging from?
   const [pendingFromPort, setPendingFromPort] = useState<string | null>(null);
 
-  const [mousePosition, setMousePosition] = useState<Point | null>(null)
-
-  useEffect(() => {
-
-    const onMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-
-    const onMouseUp = (e: MouseEvent) => {
-      setPortPositions(prev => {
-        setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
-        const keyToRemove: string = 'mouse'
-        const { [keyToRemove]: position, ...newPositions } = prev
-        return newPositions
-      })
-    }
-
-    const onMouseDown = (e: MouseEvent) => {
-      setPortPositions(prev => {
-        const keyToRemove: string = 'mouse'
-        const { [keyToRemove]: position, ...newPositions } = prev
-        return newPositions
-      })
-    }
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousedown', onMouseDown);
-
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('mousedown', onMouseDown);
-    }
-  }, [])
+  const mousePosition = useMousePosition();
 
   useEffect(() => {
       setPortPositions(prev => (
@@ -130,26 +94,49 @@ const ConnectionManager: React.FC<ManagerProps> = ({ offset, children }) => {
     startConnection(otherPortId || '');
   }
 
-  return (
-    <ConnectionContext.Provider
-      value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint }}
-    >
-      {children}
+    return (
+        <ConnectionContext.Provider
+            value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint }}
+        >
+        <div>
+                {children}
+                <svg
+                    style={{
+                        width: '100%',
+                        height: '100vh',
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        zIndex: 9999,
+                    }}
+                >
+                {
+                    connections.map((conn, idx) => {
 
-      {/* Draw all the finalized connections here */}
-      <div style={{
-    transform: `translate(...) scale(...)`, // same as content
-    transformOrigin: 'top left',
-  }}>
+                        const p1 = portPositions[conn.fromPortId];
+                        const ap1 = transformPoint(p1.x, p1.y, offset.scale, offset.x, offset.y)
+                        const p2 = portPositions[conn.toPortId];
+                        const ap2 = transformPoint(p2.x, p2.y, offset.scale, offset.x, offset.y)
+                        if (!p1 || !p2) return null;
 
-    
-  </div>
-      <SvgOverlay
-        connections={connections}
-        portPositions={portPositions}
-      />
-    </ConnectionContext.Provider>
-  );
+                        const d = generateSshapedPath(ap1.x, ap1.y, ap2.x, ap2.y, 0.2);
+
+                        return (
+                            <path
+                                key={idx}
+                                d={d}
+                                stroke="grey"
+                                strokeWidth={3}
+                                fill="none"
+                                style={{ filter: 'drop-shadow(0 0 2px black)' }}
+                            />
+                        );
+                    }
+                )}
+            </svg>
+        </div>
+        </ConnectionContext.Provider>
+    );
 };
 
-export default ConnectionManager;
+export default Connections;
