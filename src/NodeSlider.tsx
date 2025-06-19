@@ -42,8 +42,8 @@ const SliderNode: React.FC<NodeProps> = ({
   const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
     useContext(ConnectionContext);
 
-  const {offsetX, offsetY, scale} = useContext(StageContext);
-  
+  const { offsetX, offsetY, scale } = useContext(StageContext);
+
   const inputId = useId();
   const outputId = useId();
   const nodeRef = useRef<any>(null);
@@ -71,29 +71,28 @@ const SliderNode: React.FC<NodeProps> = ({
     Object.values(dependencies).forEach((f) => f(value));
   }, [value]);
 
-    useEffect(() => {
-        const handleMouseUp = (e: MouseEvent) => {
-            if (!nodeRef.current?.contains(e.target as Node)) {
-                setAddDependencyFunction(undefined)
-                setRemoveDependencyFunction(undefined)
-                setUpdateInputFunction(undefined)
-                setSelectedInputId(null)
-                setSelectedOutputId(null)
-            }
-        };
-        updatePortPositions();
-        document.addEventListener('mouseup', handleMouseUp);
+  useEffect(() => {
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!nodeRef.current?.contains(e.target as Node)) {
+        setAddDependencyFunction(undefined)
+        setRemoveDependencyFunction(undefined)
+        setUpdateInputFunction(undefined)
+        setSelectedInputId(null)
+        setSelectedOutputId(null)
+      }
+    };
+    updatePortPositions();
+    document.addEventListener('mouseup', handleMouseUp);
 
-        return () => {
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [offsetX, offsetY, scale]);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [offsetX, offsetY, scale]);
 
   const updatePortPositions = (x = 0, y = 0) => {
     Object.entries(portRefs.current).forEach(([id, el]) => {
       if (el) {
         const rect = el.getBoundingClientRect();
-        console.log(`rect ${id}`, el.getBoundingClientRect())
         const center: Point = {
           x: rect.left + (rect.width / 2),
           y: rect.top + (rect.height / 2),
@@ -104,8 +103,6 @@ const SliderNode: React.FC<NodeProps> = ({
   };
 
   const onDragHandler = (e: DraggableEvent, data: DraggableData) => {
-    console.log(e)
-    console.log(data)
     updatePortPositions(data.x, data.y);
   };
 
@@ -155,9 +152,8 @@ const SliderNode: React.FC<NodeProps> = ({
                   }}
                 >
                   <button
-                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${
-                      Object.keys(dependencies).length > 0 ? "600" : "900"
-                    } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
+                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? "600" : "900"
+                      } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
                     aria-label="Output port"
                     onMouseDown={() => {
                       console.log("slider")
