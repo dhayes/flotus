@@ -1,8 +1,8 @@
-import React, { createContext, useEffect, useState } from 'react';
+// Connections.tsx
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import type { Point } from './types';
 import { useMousePosition } from './useMousePosition';
-import { generateSshapedPath } from './lib/utils';
-import Engine from './Engine';
+import { generateSshapedPath, transformPoint } from './lib/utils';
 
 export interface Connection {
   fromPortId: string;
@@ -19,7 +19,7 @@ export const ConnectionContext = createContext({
 
 interface ConnectionsProps {
   children: React.ReactNode;
-  offset: Point;
+  offset: {x: number, y: number, scale: number};
 }
 
 const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
@@ -105,7 +105,7 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
                 <svg
                     style={{
                         width: '100%',
-                        height: '100vw',
+                        height: '100vh',
                         position: 'absolute',
                         inset: 0,
                         pointerEvents: 'none',
@@ -116,10 +116,12 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
                     connections.map((conn, idx) => {
 
                         const p1 = portPositions[conn.fromPortId];
+                        const ap1 = transformPoint(p1.x, p1.y, offset.scale, offset.x, offset.y)
                         const p2 = portPositions[conn.toPortId];
+                        const ap2 = transformPoint(p2.x, p2.y, offset.scale, offset.x, offset.y)
                         if (!p1 || !p2) return null;
 
-                        const d = generateSshapedPath(p1.x-offset.x, p1.y-offset.y, p2.x-offset.x, p2.y-offset.y, 0.2);
+                        const d = generateSshapedPath(ap1.x, ap1.y, ap2.x, ap2.y, 0.2);
 
                         return (
                             <path

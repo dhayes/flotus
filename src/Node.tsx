@@ -7,6 +7,7 @@ import {
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
 import { ConnectionContext } from './Connections';
+import { StageContext } from './Stage';
 
 type Input = {
     id: string;
@@ -48,6 +49,8 @@ const Node: React.FC<NodeProps> = ({
 
     const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
         useContext(ConnectionContext);
+
+    const {offsetX, offsetY, scale} = useContext(StageContext);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -170,6 +173,10 @@ const Node: React.FC<NodeProps> = ({
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, []);
+
+    useEffect(() => {
+        updateAllPortPositions();
+    }, [offsetX, offsetY, scale]);
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref

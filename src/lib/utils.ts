@@ -1,3 +1,4 @@
+import type { Point } from "@/types";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -35,4 +36,17 @@ export function generateSshapedPath(
           C ${cp1x},${cp1y}
             ${cp2x},${cp2y}
             ${x2},${y2}`;
+}
+
+export function transformPoint(
+  x: number,
+  y: number,
+  scale: number,
+  offsetX: number,
+  offsetY: number
+): { x: number; y: number } {
+  return {
+    x: (x -offsetX) / scale,
+    y: (y - offsetY) / scale,
+  };
 }

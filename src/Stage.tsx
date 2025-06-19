@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import './Stage.css';
-import type { Point } from 'plotly.js';
-import type { Connection } from './ConnectionManager';
 import { useMousePosition, type MousePosition } from './useMousePosition';
 
 function getMouseTransformCSS(
     currentX: number,
-  currentY: number,
+    currentY: number,
     prevX: number,
     prevY: number,
     newX: number,
@@ -18,34 +16,39 @@ function getMouseTransformCSS(
     return {
         dx: dx,
         dy: dy,
-        string: `translate(${dx}px, ${dy}px)`   
+        string: `translate(${dx}px, ${dy}px)`
     };
 }
 
-const Stage: React.FC<PropsWithChildren<{setOffset}>> = ({ setOffset, children }) => {
+export const StageContext = createContext(null);
 
-  // List of finalized connections (fromPortId → toPortId)
+const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children }) => {
 
-  const [currentX, setCurrentX] = useState(0)
-  
-  const [currentY, setCurrentY] = useState(0)
+    // List of finalized connections (fromPortId → toPortId)
+    const [scale, setScale] = useState(1);
 
-  const [transform, setTransform] = useState<string>("translate(0px, 0px)");
+    const [currentX, setCurrentX] = useState(0)
 
-  // Which port are we currently dragging from?
-  const [isPanning, setIsPanning] = useState<boolean>(false);
+    const [currentY, setCurrentY] = useState(0)
 
-  const mousePosition = useMousePosition();
-  
-  const [initialMousePosition, setInitialMousePosition] = useState<MousePosition>(null)
+    // const [transform, setTransform] = useState<string>("translate(0px, 0px)");
+
+    // Which port are we currently dragging from?
+    const [isPanning, setIsPanning] = useState<boolean>(false);
+    const [isZooming, setIsZooming] = useState<boolean>(false);
+
+    const mousePosition = useMousePosition();
+
+    const [initialMousePosition, setInitialMousePosition] = useState<MousePosition>()
 
     const onMouseUp = (e: MouseEvent) => {
         setIsPanning(false)
         if ((e.target as HTMLElement).closest('.draggable-item')) { return };
-        const t = getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
-        setCurrentX(t.dx)
-        setCurrentY(t.dy)
-        setOffset({x: t.dx, y: t.dy})
+        const newX = mousePosition.x - initialMousePosition.x + currentX; // getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
+        const newY = mousePosition.y - initialMousePosition.y + currentY
+        setCurrentX(newX)
+        setCurrentY(newY)
+        setOffset({ x: newX, y: newY, scale: scale })
     }
 
     const onMouseDown = (e: MouseEvent) => {
@@ -54,26 +57,94 @@ const Stage: React.FC<PropsWithChildren<{setOffset}>> = ({ setOffset, children }
         setInitialMousePosition(mousePosition)
     }
 
-  useEffect(() => {
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousedown', onMouseDown);
+    const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const zoomIntensity = 0.001;
+        const delta = -e.deltaY;
+        const oldScale = scale;
+        const newScale = Math.max(0.1, oldScale + delta * zoomIntensity);
 
-    return () => {
-      window.removeEventListener('mouseup', onMouseUp);
-      window.removeEventListener('mousedown', onMouseDown);
-    }
-  }, [isPanning, mousePosition])
+        if (!ref.current) return;
+
+        const rect = ref.current.getBoundingClientRect();
+
+        // Mouse position relative to the div (screen space)
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        // Convert screen coords → local coords (before zoom)
+        const localX = (mouseX - currentX);
+        const localY = (mouseY - currentY);
+
+        const dx = localX * (newScale / oldScale - 1);
+        const dy = localY * (newScale / oldScale - 1);
+
+        const newX = currentX - dx;
+        const newY = currentY - dy;
+
+        setScale(newScale);
+        setCurrentX(newX);
+        setCurrentY(newY);
+        setOffset({ x: newX, y: newY, scale: newScale });
+        //const t = getMouseTransformCSS(newX, newY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
+        // setTransform(t.string)
+    };
+
+    useEffect(() => {
+        window.addEventListener('mouseup', onMouseUp);
+        window.addEventListener('mousedown', onMouseDown);
+        // window.addEventListener("wheel", handleWheel);
+
+        return () => {
+            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('mousedown', onMouseDown);
+            // window.removeEventListener('wheel', handleWheel)
+        }
+    }, [isPanning, mousePosition, isZooming, scale])
 
 
-  useEffect(() => {
-      if (isPanning) {
-        const t = getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
-        setTransform(t.string)
-    }
+    useEffect(() => {
+        if (isPanning) {
+            //const t = getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
+            //setTransform(t.string)
+            setInitialMousePosition(mousePosition)
+            const newX = mousePosition.x - initialMousePosition.x + currentX; // getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
+            const newY = mousePosition.y - initialMousePosition.y + currentY
+            setCurrentX(newX)
+            setCurrentY(newY)
+            setOffset({ x: newX, y: newY, scale: scale })
+        }
+    }, [mousePosition])
 
-  }, [mousePosition])
+    // useEffect(() => {
+    //     if (initialMousePosition !== undefined) {
+    //         setInitialMousePosition(mousePosition)
+    //         const t = getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
+    //         setCurrentX(t.dx)
+    //         setCurrentY(t.dy)
+    //         setOffset({ x: t.dx, y: t.dy, scale: scale })
+    //         setTransform(t.string)
+    //     }
+    // }, [scale]);
 
-  return <div style={{transform: transform}} className="grid-background">{children}</div>;
+    const ref = useRef<HTMLDivElement | null>(null)
+
+    return (
+        <StageContext value={{offsetX: currentX, offsetY: currentY, scale: scale}}>
+        <div style={{ width: '100%', height: '100%', backgroundColor: 'red', overflow: 'hidden' }} onWheel={handleWheel}>
+            <div
+                ref={ref}
+                style={{
+                    transform: `translate(${currentX}px, ${currentY}px) scale(${scale})`,
+                    transformOrigin: 'top left'
+                }}
+                className="grid-background"
+            >
+                {children}
+            </div>
+        </div>
+        </StageContext>
+    );
 };
 
 export default Stage;
