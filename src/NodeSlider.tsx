@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
 import { ConnectionContext } from "./Connections";
 import type { Point } from "./types";
+import { StageContext } from "./Stage";
 
 interface NodeProps {
   label: string;
@@ -41,6 +42,8 @@ const SliderNode: React.FC<NodeProps> = ({
   const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
     useContext(ConnectionContext);
 
+  const {offsetX, offsetY, scale} = useContext(StageContext);
+  
   const inputId = useId();
   const outputId = useId();
   const nodeRef = useRef<any>(null);
@@ -68,20 +71,23 @@ const SliderNode: React.FC<NodeProps> = ({
     Object.values(dependencies).forEach((f) => f(value));
   }, [value]);
 
-  useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
-      if (!nodeRef.current?.contains(e.target as Node)) {
-        setAddDependencyFunction(undefined);
-        setRemoveDependencyFunction(undefined);
-        setUpdateInputFunction(undefined);
-        setSelectedInputId(null);
-        setSelectedOutputId(null);
+    useEffect(() => {
+        const handleMouseUp = (e: MouseEvent) => {
+            if (!nodeRef.current?.contains(e.target as Node)) {
+                setAddDependencyFunction(undefined)
+                setRemoveDependencyFunction(undefined)
+                setUpdateInputFunction(undefined)
+                setSelectedInputId(null)
+                setSelectedOutputId(null)
+            }
+        };
         updatePortPositions();
-      }
-    };
-    document.addEventListener("mouseup", handleMouseUp);
-    return () => document.removeEventListener("mouseup", handleMouseUp);
-  }, []);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [offsetX, offsetY, scale]);
 
   const updatePortPositions = (x = 0, y = 0) => {
     Object.entries(portRefs.current).forEach(([id, el]) => {

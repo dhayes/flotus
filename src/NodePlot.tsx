@@ -8,6 +8,7 @@ import Draggable, { type DraggableData, type DraggableEvent } from 'react-dragga
 import type { Point } from './types';
 import { ConnectionContext } from './Connections';
 import Plotly, { Data } from 'plotly.js-dist-min';
+import { StageContext } from './Stage';
 
 type Input = {
     id: string;
@@ -49,6 +50,8 @@ const Node: React.FC<NodeProps> = ({
 
     const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
         useContext(ConnectionContext);
+    
+    const {offsetX, offsetY, scale} = useContext(StageContext);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -161,16 +164,15 @@ const Node: React.FC<NodeProps> = ({
                 setUpdateInputFunction(undefined)
                 setSelectedInputId(null)
                 setSelectedOutputId(null)
-                updateAllPortPositions();
             }
         };
-
+        updateAllPortPositions();
         document.addEventListener('mouseup', handleMouseUp);
 
         return () => {
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, []);
+    }, [offsetX, offsetY, scale]);
 
 
     const plotRef = useRef<HTMLDivElement>(null);
