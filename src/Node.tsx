@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
-import { ConnectionContext } from './ConnectionManager';
+import { ConnectionContext } from './Connections';
 
 type Input = {
     id: string;
@@ -160,6 +160,7 @@ const Node: React.FC<NodeProps> = ({
                 setUpdateInputFunction(undefined)
                 setSelectedInputId(null)
                 setSelectedOutputId(null)
+                updateAllPortPositions();
             }
         };
 

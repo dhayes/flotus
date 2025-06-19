@@ -47,7 +47,7 @@ const Engine: React.FC<EngineProps> = (props) => {
     const position = useMousePosition();
 
     return (
-        <div>
+        <div style={{width: '100%', height: '100vh'}}>
             <button 
                 onClick={addNode}>
                     New Node

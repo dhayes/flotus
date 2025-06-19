@@ -50,7 +50,6 @@ const Stage: React.FC<PropsWithChildren<{setOffset}>> = ({ setOffset, children }
 
     const onMouseDown = (e: MouseEvent) => {
         if ((e.target as HTMLElement).closest('.draggable-item')) { return };
-        console.log(mousePosition)
         setIsPanning(true)
         setInitialMousePosition(mousePosition)
     }
@@ -71,8 +70,6 @@ const Stage: React.FC<PropsWithChildren<{setOffset}>> = ({ setOffset, children }
         const t = getMouseTransformCSS(currentX, currentY, initialMousePosition.x, initialMousePosition.y, mousePosition.x, mousePosition.y)
         setTransform(t.string)
     }
-    console.log(initialMousePosition)
-    console.log(isPanning)
 
   }, [mousePosition])
 

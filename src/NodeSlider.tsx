@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useId, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import Draggable from "react-draggable";
-import { ConnectionContext } from "./ConnectionManager";
+import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
+import { ConnectionContext } from "./Connections";
 import type { Point } from "./types";
 
 interface NodeProps {
@@ -76,34 +76,38 @@ const SliderNode: React.FC<NodeProps> = ({
         setUpdateInputFunction(undefined);
         setSelectedInputId(null);
         setSelectedOutputId(null);
+        updatePortPositions();
       }
     };
     document.addEventListener("mouseup", handleMouseUp);
     return () => document.removeEventListener("mouseup", handleMouseUp);
   }, []);
 
-  const updatePortPositions = () => {
+  const updatePortPositions = (x = 0, y = 0) => {
     Object.entries(portRefs.current).forEach(([id, el]) => {
       if (el) {
         const rect = el.getBoundingClientRect();
+        console.log(`rect ${id}`, el.getBoundingClientRect())
         const center: Point = {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
+          x: rect.left + (rect.width / 2),
+          y: rect.top + (rect.height / 2),
         };
         updatePortPosition(id, center);
       }
     });
   };
 
-  const onDragHandler = () => {
-    updatePortPositions();
+  const onDragHandler = (e: DraggableEvent, data: DraggableData) => {
+    console.log(e)
+    console.log(data)
+    updatePortPositions(data.x, data.y);
   };
 
   return (
     <Draggable
       defaultClassName="inline-block draggable-item"
       nodeRef={nodeRef}
-      onDrag={onDragHandler}
+      onDrag={(e, data) => onDragHandler(e, data)}
       onStop={onDragHandler}
       cancel="button"
     >
@@ -150,6 +154,7 @@ const SliderNode: React.FC<NodeProps> = ({
                     } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
                     aria-label="Output port"
                     onMouseDown={() => {
+                      console.log("slider")
                       startConnection(outputId);
                       setSelectedOutputId(outputId);
                       setAddDependencyFunction(() => (id, f) => addDependency(id, f));

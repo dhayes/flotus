@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import type { Point } from './types';
 import { useMousePosition } from './useMousePosition';
 import { generateSshapedPath } from './lib/utils';
@@ -19,9 +19,10 @@ export const ConnectionContext = createContext({
 
 interface ConnectionsProps {
   children: React.ReactNode;
+  offset: Point;
 }
 
-const Connections: React.FC<ConnectionsProps> = ({children}) => {
+const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
 
   // Map each portId → its current center {x,y}
   const [portPositions, setPortPositions] = useState<Record<string, Point>>({});
@@ -34,10 +35,83 @@ const Connections: React.FC<ConnectionsProps> = ({children}) => {
 
   const mousePosition = useMousePosition();
 
+  useEffect(() => {
+      setPortPositions(prev => (
+        mousePosition ? { ...prev, ['mouse']: mousePosition } : prev
+      ));
+  }, [mousePosition]);
+
+  // Called by <Node> whenever a port’s center changes
+  const updatePortPosition = (portId: string, point: Point) => {
+    setPortPositions(prev => ({ ...prev, [portId]: point }));
+  };
+
+  // Called onMouseDown of a port
+  const startConnection = (portId: string) => {
+    console.log('startConnection')
+    setPendingFromPort(() => portId);
+      setConnections(prev => [
+        ...prev,
+        { fromPortId: portId, toPortId: 'mouse' },
+      ]);
+  };
+
+  // Called onMouseUp of a port
+  const finishConnection = (portId: string) => {
+    console.log('finishConnection')
+    if (pendingFromPort && pendingFromPort !== portId) {
+      setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
+      setConnections(prev => [
+        ...prev,
+        { fromPortId: pendingFromPort, toPortId: portId },
+      ]);
+    }
+    setPendingFromPort(null);
+  };
+
+  const deleteConnection = (toPortId: string) => {
+    setConnections(prev => prev.filter(
+      connection => !(connection.toPortId === toPortId)
+    ));
+  };
+
+  const getOtherPortId = (portId: string) => {
+    const connection =
+      connections.find(conn => conn.fromPortId === portId) ||
+      connections.find(conn => conn.toPortId === portId);
+
+    if (!connection) return null;
+    if (connection.fromPortId === portId) {
+      return connection.toPortId;
+    }
+    if (connection.toPortId === portId) {
+      return connection.fromPortId;
+    }
+    return null;
+  };
+
+  const moveEndPoint = (toPortId: string) => {
+    const otherPortId = getOtherPortId(toPortId);
+    deleteConnection(toPortId);
+    startConnection(otherPortId || '');
+  }
+
     return (
+        <ConnectionContext.Provider
+            value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint }}
+        >
         <div>
-            {children}
-            <svg>
+                {children}
+                <svg
+                    style={{
+                        width: '100%',
+                        height: '100vw',
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        zIndex: 9999,
+                    }}
+                >
                 {
                     connections.map((conn, idx) => {
 
@@ -45,7 +119,7 @@ const Connections: React.FC<ConnectionsProps> = ({children}) => {
                         const p2 = portPositions[conn.toPortId];
                         if (!p1 || !p2) return null;
 
-                        const d = generateSshapedPath(p1.x, p1.y, p2.x, p2.y, 0.2);
+                        const d = generateSshapedPath(p1.x-offset.x, p1.y-offset.y, p2.x-offset.x, p2.y-offset.y, 0.2);
 
                         return (
                             <path
@@ -61,6 +135,7 @@ const Connections: React.FC<ConnectionsProps> = ({children}) => {
                 )}
             </svg>
         </div>
+        </ConnectionContext.Provider>
     );
 };
 

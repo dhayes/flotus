@@ -10,7 +10,7 @@ function App() {
   const [offset, setOffset] = useState<Point>({x: 0, y: 0})
   return (
     <Stage setOffset={setOffset}>
-      <Connections>
+      <Connections offset={offset}>
         <Engine />
       </Connections>
     </Stage>

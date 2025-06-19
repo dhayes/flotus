@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
 import type { Point } from './types';
-import { ConnectionContext } from './ConnectionManager';
+import { ConnectionContext } from './Connections';
 import Plotly, { Data } from 'plotly.js-dist-min';
 
 type Input = {
@@ -161,6 +161,7 @@ const Node: React.FC<NodeProps> = ({
                 setUpdateInputFunction(undefined)
                 setSelectedInputId(null)
                 setSelectedOutputId(null)
+                updateAllPortPositions();
             }
         };
 
