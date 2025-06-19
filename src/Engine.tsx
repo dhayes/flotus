@@ -2,8 +2,6 @@ import React, { useEffect, useId, useState, type JSX } from 'react';
 import Node from './Node';
 import { useMousePosition } from './useMousePosition';
 import NodePlot from './NodePlot';
-import PlotDraggableNode from './PlotDraggableNode';
-import Simple3DPlot from './PlotDraggableNode';
 import NodeSlider from './NodeSlider';
 
 interface EngineProps {
@@ -43,14 +41,12 @@ const Engine: React.FC<EngineProps> = (props) => {
             { id: crypto.randomUUID(), name: `test${prev.length}`, label: `test${prev.length}` },
         ]);
     }
-   
-    const position = useMousePosition();
 
     return (
-        <div style={{width: '100%', height: '100vh'}}>
-            <button 
+        <div style={{ width: '100%', height: '100vh' }}>
+            <button
                 onClick={addNode}>
-                    New Node
+                New Node
             </button>
             {nodes.map(nodeData => (
                 <Node
@@ -69,32 +65,32 @@ const Engine: React.FC<EngineProps> = (props) => {
             ))}
             {
                 <>
-               <NodePlot
-                    key={useId()}
-                    label="Plot Node"
-                    setAddDependencyFunction={setAddDependencyFunction}
-                    addDependencyFunction={addDependencyFunction}
-                    setRemoveDependencyFunction={setRemoveDependencyFunction}
-                    removeDependencyFunction={removeDependencyFunction}
-                    setUpdateInputFunction={setUpdateInputFunction}
-                    setSelectedInputId={setSelectedInputId}
-                    setSelectedOutputId={setSelectedOutputId}
-                    selectedInputId={selectedInputId}
-                    selectedOutputId={selectedOutputId}
-                />
-                <NodeSlider
-                    key={useId()}
-                    label="Plot Node"
-                    setAddDependencyFunction={setAddDependencyFunction}
-                    addDependencyFunction={addDependencyFunction}
-                    setRemoveDependencyFunction={setRemoveDependencyFunction}
-                    removeDependencyFunction={removeDependencyFunction}
-                    setUpdateInputFunction={setUpdateInputFunction}
-                    setSelectedInputId={setSelectedInputId}
-                    setSelectedOutputId={setSelectedOutputId}
-                    selectedInputId={selectedInputId}
-                    selectedOutputId={selectedOutputId}
-                />
+                    <NodePlot
+                        key={useId()}
+                        label="Plot Node"
+                        setAddDependencyFunction={setAddDependencyFunction}
+                        addDependencyFunction={addDependencyFunction}
+                        setRemoveDependencyFunction={setRemoveDependencyFunction}
+                        removeDependencyFunction={removeDependencyFunction}
+                        setUpdateInputFunction={setUpdateInputFunction}
+                        setSelectedInputId={setSelectedInputId}
+                        setSelectedOutputId={setSelectedOutputId}
+                        selectedInputId={selectedInputId}
+                        selectedOutputId={selectedOutputId}
+                    />
+                    <NodeSlider
+                        key={useId()}
+                        label="Plot Node"
+                        setAddDependencyFunction={setAddDependencyFunction}
+                        addDependencyFunction={addDependencyFunction}
+                        setRemoveDependencyFunction={setRemoveDependencyFunction}
+                        removeDependencyFunction={removeDependencyFunction}
+                        setUpdateInputFunction={setUpdateInputFunction}
+                        setSelectedInputId={setSelectedInputId}
+                        setSelectedOutputId={setSelectedOutputId}
+                        selectedInputId={selectedInputId}
+                        selectedOutputId={selectedOutputId}
+                    />
                 </>
             }
         </div>

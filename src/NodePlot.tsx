@@ -190,7 +190,6 @@ const Node: React.FC<NodeProps> = ({
                 return r === 0 ? 1 : Math.sin(r) / r;
             })
         );
-        console.log(z)
         const data: Partial<Data>[] = [{
             z: z,
             type: 'surface',
