@@ -57,8 +57,8 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
 
   // Called onMouseUp of a port
   const finishConnection = (portId: string) => {
+    setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
     if (pendingFromPort && pendingFromPort !== portId) {
-      setConnections(prev => prev.filter(e => e.toPortId != 'mouse'))
       setConnections(prev => [
         ...prev,
         { fromPortId: pendingFromPort, toPortId: portId },

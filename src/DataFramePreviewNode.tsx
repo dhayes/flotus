@@ -1,13 +1,12 @@
-import React, { useContext, useEffect, useId, useRef, useState } from 'react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from "@/components/ui/card";
-import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
-import type { Point } from './types';
-import { ConnectionContext } from './Connections';
-import { StageContext } from './Stage';
+import React, { useContext, useEffect, useId, useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table"; // Make sure this is your shadcn table
+import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
+import * as dfd from "danfojs";
+import { ConnectionContext } from "./ConnectionManager";
+import type { Point } from "./types";
+import { StageContext } from "./Stage";
+
 
 type Input = {
     id: string;
@@ -17,7 +16,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeProps {
+interface DataFramePreviewNodeProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -32,7 +31,7 @@ interface NodeProps {
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const DataFramePreviewNode: React.FC<DataFramePreviewNodeProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -47,10 +46,11 @@ const Node: React.FC<NodeProps> = ({
     style
 }) => {
 
+
     const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
         useContext(ConnectionContext);
 
-    const {offsetX, offsetY, scale} = useContext(StageContext);
+    const { offsetX, offsetY, scale } = useContext(StageContext);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -86,14 +86,7 @@ const Node: React.FC<NodeProps> = ({
     const inputsData: Array<Input> = [
         {
             id: useId(),
-            value: 0,
-            connected: null,
-            removeDependencyFunction: undefined,
-            addDependencyFunction: undefined
-        },
-        {
-            id: useId(),
-            value: 0,
+            value: undefined,
             connected: null,
             removeDependencyFunction: undefined,
             addDependencyFunction: undefined
@@ -107,20 +100,30 @@ const Node: React.FC<NodeProps> = ({
         changes: Partial<Pick<Input, 'value' | 'connected' | 'addDependencyFunction' | 'removeDependencyFunction'>>
     ) => setInputs(prev => prev.map((inp, i) => i === index ? { ...inp, ...changes } : inp));
 
-    const addNumbers = (a: number, b: number): number => {
-        return a + b;
+
+    const [headData, setHeadData] = useState<any[]>([]);
+    const [headColumns, setHeadColumns] = useState<string[]>([]);
+
+    const columns = headColumns.map((col) => ({
+        accessorKey: col,
+        header: col
+    }));
+
+    const computeOutput = (a: dfd.DataFrame): number => {
+        console.log(a)
+        return 0;
     }
 
     const outputID = useId();
 
     const [output, setOutput] = useState({
         id: outputID,
-        value: addNumbers(inputs[0].value, inputs[1].value),
+        value: null,
         connected: null,
     })
 
     useEffect(() => {
-        const newValue = addNumbers(inputs[0].value, inputs[1].value);
+        const newValue = computeOutput(inputs[0].value);
         setOutput(prev => ({
             ...prev,
             value: newValue
@@ -152,19 +155,19 @@ const Node: React.FC<NodeProps> = ({
     const makeRemoveDependencyFunction = () => (id: string) => removeDependency(id)
 
     useEffect(() => {
-            Object.values(dependencies).forEach((f) => f(output.value))
+        Object.values(dependencies).forEach((f) => f(output.value))
     }, [output.value]);
 
     useEffect(() => {
         const handleMouseUp = (e: MouseEvent) => {
-            if (!nodeRef.current?.contains(e.target as Node)) {
+            if (!nodeRef.current?.contains(e.target as HTMLElement)) {
                 setAddDependencyFunction(undefined)
                 setRemoveDependencyFunction(undefined)
                 setUpdateInputFunction(undefined)
                 setSelectedInputId(null)
                 setSelectedOutputId(null)
-                finishConnection(null)
                 updateAllPortPositions();
+                console.log('aaaaa')
             }
         };
 
@@ -197,18 +200,18 @@ const Node: React.FC<NodeProps> = ({
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label} - {selectedOutputId}
+                        {label}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             {
                                 inputs.map((input, index) => {
-                                    const updateInputFunction = () => (value: number) => {
-                                        updateInput(index, {value: value});
+                                    const updateInputFunction = () => (value: dfd.DataFrame | undefined) => {
+                                        updateInput(index, { value: value });
                                     };
                                     return (
-                                        <div 
-                                            key={input.id} 
+                                        <div
+                                            key={input.id}
                                             className='self-end text-left flex !mr-0 pr-0'
                                         >
                                             <div
@@ -224,11 +227,11 @@ const Node: React.FC<NodeProps> = ({
                                                         setSelectedInputId(input.id);
                                                         setUpdateInputFunction(updateInputFunction);
                                                         onMouseUpPort(input.id);
-                                                        updateInput(index, {value: input.value});
-                                                        updateInput(index, {connected: selectedOutputId});
+                                                        updateInput(index, { value: input.value });
+                                                        updateInput(index, { connected: selectedOutputId });
                                                         if (addDependencyFunction && removeDependencyFunction) {
-                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
-                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
+                                                            updateInput(index, { addDependencyFunction: addDependencyFunction });
+                                                            updateInput(index, { removeDependencyFunction: removeDependencyFunction });
                                                         }
                                                     }}
                                                     onMouseDown={() => {
@@ -238,7 +241,7 @@ const Node: React.FC<NodeProps> = ({
                                                         if (input.removeDependencyFunction) {
                                                             input.removeDependencyFunction(input.id)
                                                             setRemoveDependencyFunction(() => input.removeDependencyFunction)
-                                                            updateInput(index, {connected: null})
+                                                            updateInput(index, { connected: null })
                                                         }
                                                         if (input.addDependencyFunction) {
                                                             setAddDependencyFunction(() => input.addDependencyFunction)
@@ -246,7 +249,17 @@ const Node: React.FC<NodeProps> = ({
                                                     }}
                                                 ></button>
                                             </div>
-                                            <div className='my-1'>
+
+                                            {(output.value > 0) ? (
+                                                <div className="rounded bg-white text-black text-sm max-h-[200px] overflow-auto border border-gray-200">
+                                                    <DataTable columns={columns} data={headData} />
+                                                </div>
+                                            ) : (
+                                                <div className="text-gray-300 text-sm font-mono text-center py-4">
+                                                    Connect a DataFrame to preview
+                                                </div>
+                                            )}
+                                            {/* <div className='my-1'>
                                                 <input
                                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                                     type={input.connected? 'text' : 'number'}
@@ -254,7 +267,7 @@ const Node: React.FC<NodeProps> = ({
                                                     value={input.value}
                                                     onChange={e => updateInput(index, {value: Number(e.target.value)})}
                                                 />
-                                            </div>
+                                            </div> */}
                                         </div>
                                     );
                                 })}
@@ -276,7 +289,7 @@ const Node: React.FC<NodeProps> = ({
                                         portRefs.current[output.id] = el
                                     }}
                                 >
-                                    <button 
+                                    <button
                                         className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
@@ -304,4 +317,5 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default React.memo(Node);
+export default DataFramePreviewNode;
+

@@ -22,11 +22,11 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
     const onMouseUp = (e: MouseEvent) => {
         setIsPanning(false)
         if ((e.target as HTMLElement).closest('.draggable-item')) { return };
-        const newX = mousePosition.x - initialMousePosition.x + currentX;
-        const newY = mousePosition.y - initialMousePosition.y + currentY
-        setCurrentX(newX)
-        setCurrentY(newY)
-        setOffset({ x: newX, y: newY, scale: scale })
+        // const newX = mousePosition.x - initialMousePosition.x + currentX;
+        // const newY = mousePosition.y - initialMousePosition.y + currentY
+        // setCurrentX(newX)
+        // setCurrentY(newY)
+        // setOffset({ x: newX, y: newY, scale: scale })
     }
 
     const onMouseDown = (e: MouseEvent) => {
@@ -92,7 +92,7 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
 
     return (
         <StageContext value={{ offsetX: currentX, offsetY: currentY, scale: scale }}>
-            <div style={{ width: '100%', height: '100%', overflow: 'hidden' }} onWheel={handleWheel} className='grid-background'>
+            <div style={{ width: '100vw', height: '100%', overflow: 'hidden' }} onWheel={handleWheel} className='grid-background'>
                 <div
                     ref={ref}
                     style={{

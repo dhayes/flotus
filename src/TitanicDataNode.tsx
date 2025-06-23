@@ -8,6 +8,7 @@ import Draggable, { type DraggableData, type DraggableEvent } from 'react-dragga
 import type { Point } from './types';
 import { ConnectionContext } from './Connections';
 import { StageContext } from './Stage';
+import * as dfd from "danfojs";
 
 type Input = {
     id: string;
@@ -17,7 +18,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeProps {
+interface TitanicDataNodeProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -32,7 +33,7 @@ interface NodeProps {
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const TitanicDataNode: React.FC<TitanicDataNodeProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -51,6 +52,19 @@ const Node: React.FC<NodeProps> = ({
         useContext(ConnectionContext);
 
     const {offsetX, offsetY, scale} = useContext(StageContext);
+    
+
+  const sampleData = {
+    PassengerId: [1, 2, 3, 4, 5],
+    Survived: [0, 1, 1, 1, 0],
+    Pclass: [3, 1, 3, 1, 3],
+    Name: ["Braund", "Cumings", "Heikkinen", "Futrelle", "Allen"],
+    Sex: ["male", "female", "female", "female", "male"],
+    Age: [22, 38, 26, 35, 35],
+    Fare: [7.25, 71.2833, 7.925, 53.1, 8.05]
+  };
+
+    const df = new dfd.DataFrame(sampleData);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -83,49 +97,13 @@ const Node: React.FC<NodeProps> = ({
         finishConnection(portId);
     };
 
-    const inputsData: Array<Input> = [
-        {
-            id: useId(),
-            value: 0,
-            connected: null,
-            removeDependencyFunction: undefined,
-            addDependencyFunction: undefined
-        },
-        {
-            id: useId(),
-            value: 0,
-            connected: null,
-            removeDependencyFunction: undefined,
-            addDependencyFunction: undefined
-        }
-    ]
-
-    const [inputs, setInputs] = useState(inputsData)
-
-    const updateInput = (
-        index: number,
-        changes: Partial<Pick<Input, 'value' | 'connected' | 'addDependencyFunction' | 'removeDependencyFunction'>>
-    ) => setInputs(prev => prev.map((inp, i) => i === index ? { ...inp, ...changes } : inp));
-
-    const addNumbers = (a: number, b: number): number => {
-        return a + b;
-    }
-
     const outputID = useId();
 
     const [output, setOutput] = useState({
         id: outputID,
-        value: addNumbers(inputs[0].value, inputs[1].value),
+        value: df, 
         connected: null,
     })
-
-    useEffect(() => {
-        const newValue = addNumbers(inputs[0].value, inputs[1].value);
-        setOutput(prev => ({
-            ...prev,
-            value: newValue
-        }));
-    }, [inputs]);
 
     const [dependencies, setDependencies] = useState<Record<string, ((value: any) => void)>>({});
 
@@ -163,7 +141,6 @@ const Node: React.FC<NodeProps> = ({
                 setUpdateInputFunction(undefined)
                 setSelectedInputId(null)
                 setSelectedOutputId(null)
-                finishConnection(null)
                 updateAllPortPositions();
             }
         };
@@ -197,11 +174,11 @@ const Node: React.FC<NodeProps> = ({
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label} - {selectedOutputId}
+                        {label}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            {
+                            {/* {
                                 inputs.map((input, index) => {
                                     const updateInputFunction = () => (value: number) => {
                                         updateInput(index, {value: value});
@@ -257,7 +234,7 @@ const Node: React.FC<NodeProps> = ({
                                             </div>
                                         </div>
                                     );
-                                })}
+                                })} */}
 
 
                             <div className='self-end text-right flex !ml-0 pl-0'>
@@ -265,7 +242,7 @@ const Node: React.FC<NodeProps> = ({
                                     <input
                                         className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                         type='text'
-                                        value={output.value}
+                                        value={output.id}
                                         readOnly
                                     />
                                 </div>
@@ -304,4 +281,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default React.memo(Node);
+export default TitanicDataNode;
