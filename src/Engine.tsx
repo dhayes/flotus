@@ -3,6 +3,7 @@ import Node from './Node';
 import { useMousePosition } from './useMousePosition';
 import NodePlot from './NodePlot';
 import NodeSlider from './NodeSlider';
+import ContextMenu from './ContextMenu';
 
 interface EngineProps {
     // Define your props here
@@ -15,6 +16,9 @@ const Engine: React.FC<EngineProps> = (props) => {
     const [updateInputFunction, setUpdateInputFunction] = useState<(value: any) => void>();
     const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
+
+    const [contextMenuOpen, setContextMenuOpen] = useState(false);
+    const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
     useEffect(() => {
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
@@ -43,11 +47,36 @@ const Engine: React.FC<EngineProps> = (props) => {
     }
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
+        <div style={{ width: '100%', height: '100vh' }} onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenuPosition({ x: e.clientX, y: e.clientY });
+            setContextMenuOpen(true);
+        }}>
             <button
                 onClick={addNode}>
                 New Node
             </button>
+            <ContextMenu
+                isOpen={contextMenuOpen}
+                position={contextMenuPosition}
+                onClose={() => setContextMenuOpen(false)}
+                items={[
+                    {
+                        label: 'Add Node',
+                        onClick: () => {
+                            addNode();
+                            setContextMenuOpen(false);
+                        },
+                    },
+                    {
+                        label: 'Remove Node',
+                        onClick: () => {
+                            // Implement remove node logic here
+                            setContextMenuOpen(false);
+                        },
+                    },
+                ]}
+            />
             {nodes.map(nodeData => (
                 <Node
                     key={nodeData.id}
