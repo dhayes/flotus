@@ -218,7 +218,7 @@ const Node: React.FC<NodeProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    className={`!mx-2 !mb-[10px] !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`} 
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
@@ -263,7 +263,7 @@ const Node: React.FC<NodeProps> = ({
                             <div className='self-end text-right flex !ml-0 pl-0'>
                                 <div>
                                     <input
-                                        className='w-1/3 py-0 px-2 bg-white text-black rounded'
+                                        className='w-1/3 py-0 px-2 bg-white rounded'
                                         type='text'
                                         value={output.value}
                                         readOnly
@@ -277,7 +277,7 @@ const Node: React.FC<NodeProps> = ({
                                     }}
                                 >
                                     <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${Object.keys(dependencies).length > 0 ? '!bg-gray-400' : '!bg-gray-600'} !p-0 !border-0 !cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
                                             onMouseDownPort(output.id)
@@ -304,4 +304,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default React.memo(Node);
+export default Node;
