@@ -185,7 +185,7 @@ const Node: React.FC<NodeProps> = ({
 
     return (
         <Draggable
-            defaultClassName='inline-block draggable-item'
+            defaultClassName='inline-block draggable-item absolute'
             nodeRef={nodeRef}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
@@ -197,7 +197,7 @@ const Node: React.FC<NodeProps> = ({
                     style={width ? { width: `${width}px` } : { width: '200px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label} - {selectedOutputId}
+                        {label}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
