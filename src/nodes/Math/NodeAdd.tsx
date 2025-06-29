@@ -5,9 +5,9 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
-import type { Point } from '../types';
-import { ConnectionContext } from '../Connections';
-import { StageContext } from '../Stage';
+import type { Point } from '../../types';
+import { ConnectionContext } from '../../Connections';
+import { StageContext } from '../../Stage';
 
 type Input = {
     id: string;
@@ -17,7 +17,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeProps {
+interface NodeAddProps {
     id: string;
     label: string;
     width?: number;
@@ -33,7 +33,7 @@ interface NodeProps {
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const NodeAdd: React.FC<NodeAddProps> = ({
     id,
     label,
     width,
@@ -306,4 +306,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default Node;
+export default NodeAdd;

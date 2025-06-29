@@ -1,9 +1,18 @@
+import './nodeRegistration'; // runs side-effect and registers all nodes
 import React, { useEffect, useId, useState, type JSX } from 'react';
-import Node from './Node';
-import { useMousePosition } from './useMousePosition';
-import NodePlot from './NodePlot';
-import NodeSlider from './NodeSlider';
 import ContextMenu from './ContextMenu';
+import { getNodeComponent } from './NodeRegistry';
+import { nodeCatalog } from './nodeRegistration';
+
+const grouped = nodeCatalog.reduce((acc, node) => {
+  if (!acc[node.category]) acc[node.category] = [];
+  acc[node.category].push(node);
+  return acc;
+}, {} as Record<string, typeof nodeCatalog>);
+
+console.log('Node Catalog:', nodeCatalog);
+console.log('Node Catalog:', grouped);
+console.log('Node Catalog:', Object.entries(grouped).map(([category, nodes]) => ({ category, nodes: nodes.map(n => n.label) })));   
 
 interface EngineProps {
     // Define your props here
@@ -31,18 +40,19 @@ const Engine: React.FC<EngineProps> = (props) => {
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
-    type NodeData = { id: string; name: string; label: string; };
+    type NodeData = { id: string; type: string; label: string };
+
 
     const [nodes, setNodes] = useState<NodeData[]>([
-        { id: crypto.randomUUID(), name: 'test0', label: 'test0' },
-        { id: crypto.randomUUID(), name: 'test2', label: 'test2' },
-        { id: crypto.randomUUID(), name: 'test3', label: 'test3' },
+        { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
+        { id: crypto.randomUUID(), type: 'basicnode', label: 'test2' },
+        { id: crypto.randomUUID(), type: 'basicnode', label: 'test3' },
     ]);
 
     const addNode = () => {
         setNodes(prev => [
             ...prev,
-            { id: crypto.randomUUID(), name: `test${prev.length}`, label: `test${prev.length}` },
+        { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
         ]);
     }
 
@@ -60,43 +70,26 @@ const Engine: React.FC<EngineProps> = (props) => {
                 isOpen={contextMenuOpen}
                 position={contextMenuPosition}
                 onClose={() => setContextMenuOpen(false)}
-                items={[
-                    {
-                        label: 'Add Node',
-                        onClick: () => {
-                            addNode();
-                            setContextMenuOpen(false);
-                        },
+                items={nodeCatalog.map((node) => ({
+                    label: node.label,
+                    category: node.category,
+                    onClick: () => {
+                        setNodes(prev => [
+                            ...prev,
+                            { id: crypto.randomUUID(), type: node.type, label: node.label },
+                        ]);
                     },
-                    {
-                        label: 'Remove Node',
-                        onClick: () => {
-                            // Implement remove node logic here
-                            setContextMenuOpen(false);
-                        },
-                    },
-                ]}
+                }))}
             />
-            {nodes.map(nodeData => (
-                <Node
-                    key={nodeData.id}
-                    label={nodeData.label}
-                    setAddDependencyFunction={setAddDependencyFunction}
-                    addDependencyFunction={addDependencyFunction}
-                    setRemoveDependencyFunction={setRemoveDependencyFunction}
-                    removeDependencyFunction={removeDependencyFunction}
-                    setUpdateInputFunction={setUpdateInputFunction}
-                    setSelectedInputId={setSelectedInputId}
-                    setSelectedOutputId={setSelectedOutputId}
-                    selectedInputId={selectedInputId}
-                    selectedOutputId={selectedOutputId}
-                />
-            ))}
-            {
-                <>
-                    <NodePlot
-                        key={useId()}
-                        label="Plot Node"
+            {nodes.map((nodeData) => {
+                const NodeComponent = getNodeComponent(nodeData.type);
+                if (!NodeComponent) return null;
+
+                return (
+                    <NodeComponent
+                        key={nodeData.id}
+                        id={nodeData.id}
+                        label={nodeData.label}
                         setAddDependencyFunction={setAddDependencyFunction}
                         addDependencyFunction={addDependencyFunction}
                         setRemoveDependencyFunction={setRemoveDependencyFunction}
@@ -107,21 +100,8 @@ const Engine: React.FC<EngineProps> = (props) => {
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
                     />
-                    <NodeSlider
-                        key={useId()}
-                        label="Plot Node"
-                        setAddDependencyFunction={setAddDependencyFunction}
-                        addDependencyFunction={addDependencyFunction}
-                        setRemoveDependencyFunction={setRemoveDependencyFunction}
-                        removeDependencyFunction={removeDependencyFunction}
-                        setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectedInputId={setSelectedInputId}
-                        setSelectedOutputId={setSelectedOutputId}
-                        selectedInputId={selectedInputId}
-                        selectedOutputId={selectedOutputId}
-                    />
-                </>
-            }
+                );
+            })}
         </div>
     );
 };

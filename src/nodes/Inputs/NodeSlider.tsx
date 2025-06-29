@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useId, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
-import { ConnectionContext } from "./Connections";
-import type { Point } from "./types";
-import { StageContext } from "./Stage";
+import { ConnectionContext } from "@/Connections";
+import type { Point } from "@/types";
+import { StageContext } from "@/Stage";
 
 interface NodeProps {
   label: string;
