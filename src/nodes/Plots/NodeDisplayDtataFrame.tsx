@@ -5,6 +5,7 @@ import * as dfd from "danfojs";
 import { ConnectionContext } from "@/Connections";
 import type { Point } from "@/types";
 import { StageContext } from "@/Stage";
+import { DataTable } from "@/components/ui/data-table";
 
 type Input = {
     id: string;
@@ -116,9 +117,13 @@ const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
 
     const outputID = useId();
 
-    const [output, setOutput] = useState({
+    const [output, setOutput] = useState<{
+        id: string;
+        value: dfd.DataFrame;
+        connected: any;
+    }>({
         id: outputID,
-        value: null,
+        value: new dfd.DataFrame(),
         connected: null,
     })
 
@@ -128,6 +133,8 @@ const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
             ...prev,
             value: newValue
         }));
+        console.log("Output updated:", newValue);
+        console.log("Output updated:", output);
     }, [inputs]);
 
     const [dependencies, setDependencies] = useState<Record<string, ((value: any) => void)>>({});
@@ -156,6 +163,7 @@ const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
 
     useEffect(() => {
         Object.values(dependencies).forEach((f) => f(output.value))
+        console.log("Dependencies updated:", dependencies);
     }, [output.value]);
 
     useEffect(() => {
@@ -197,13 +205,13 @@ const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
             <div ref={nodeRef} style={style}>
                 <Card
                     className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
-                    style={width ? { width: `${width}px` } : { width: '200px' }}
+                    // style={{ width: '400px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
                         {label}
                     </CardHeader>
-                    <CardContent className="py-4 px-0 bg-[#696f72]">
-                        <div className='flex flex-col items-stretch gap-4 text-justify'>
+                    <CardContent className="pb-1 px-0 bg-[#696f72]">
+                        <div className='flex flex-col items-stretch gap-0 text-justify'>
                             {
                                 inputs.map((input, index) => {
                                     const updateInputFunction = () => (value: any) => {
@@ -253,18 +261,29 @@ const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
                                     );
                                 })}
 
-                            <div className='flex flex-col !items-center !gap-0'>
+                            <div className='flex flex-col !items-center !gap-0 overflow-y-scroll'>
 
                                 <div
-                                    className='flex 1 1 auto self-center shadow-[0px_4px_6px_4px_rgba(0,_0,_0,_0.35)]'
+                                    className='flex 1 1 auto self-center overflow-y-scroll rounded-lg text-white text-sm max-h-[200px] w-full px-2 py-1'
+                                    onClick={() => {
+                                        console.log("Clicked on output");
+                                        console
+                                    }}
                                 >
                                     {output.value ? (
-                                        <div className='w-full h-full overflow-auto'>
-                                            {output.value ? JSON.stringify(dfd.toJSON(output.value, { format: 'row' }), null, 2) : null}
+                                        <div className="rounded bg-white text-black text-sm max-h-[200px] overflow-auto border border-gray-200">
+                                            <DataTable
+                                                columns={output.value.columns?.map((col: string) => ({
+                                                    id: col,
+                                                    accessorKey: col,
+                                                    header: col,
+                                                })) ?? []}
+                                                data={output.value && output.value.shape && output.value.shape[0] > 0 ? (dfd.toJSON(output.value, { format: 'column' }) as unknown[] ?? []) : []}
+                                            />
                                         </div>
                                     ) : (
-                                        <div className='w-full h-full flex items-center justify-center text-gray-500'>
-                                            No output data
+                                        <div className="text-gray-300 text-sm font-mono text-center py-4">
+                                            Connect a DataFrame to preview
                                         </div>
                                     )}
                                 </div>
