@@ -36,6 +36,7 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
     }
 
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest('.draggable-item')) { return };
         e.preventDefault();
         const zoomIntensity = 0.001;
         const delta = -e.deltaY;
