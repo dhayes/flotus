@@ -43,11 +43,7 @@ const Engine: React.FC<EngineProps> = (props) => {
     type NodeData = { id: string; type: string; label: string };
 
 
-    const [nodes, setNodes] = useState<NodeData[]>([
-        { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
-        { id: crypto.randomUUID(), type: 'basicnode', label: 'test2' },
-        { id: crypto.randomUUID(), type: 'basicnode', label: 'test3' },
-    ]);
+    const [nodes, setNodes] = useState<NodeData[]>([]);
 
     const addNode = () => {
         setNodes(prev => [
@@ -62,10 +58,6 @@ const Engine: React.FC<EngineProps> = (props) => {
             setContextMenuPosition({ x: e.clientX, y: e.clientY });
             setContextMenuOpen(true);
         }}>
-            <button
-                onClick={addNode}>
-                New Node
-            </button>
             <ContextMenu
                 isOpen={contextMenuOpen}
                 position={contextMenuPosition}
