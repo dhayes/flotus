@@ -50,7 +50,7 @@ const ContextMenu: React.FC<ContextMenuProps> = (props) => {
                 >
                     {
                         itemsByCategory.map((category, index) => (
-                            <DropdownMenuGroup>
+                            <DropdownMenuGroup key={index}>
                             <DropdownMenuSub
                                 key={index}
                             >
