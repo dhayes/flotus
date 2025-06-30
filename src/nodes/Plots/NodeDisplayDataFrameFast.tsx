@@ -7,6 +7,7 @@ import type { Point } from "@/types";
 import { StageContext } from "@/Stage";
 import { DataTable } from "@/components/ui/data-table";
 import { FixedSizeList as List } from 'react-window';
+import FastDataTable from "../../components/ui/fast-data-table";
 
 type Input = {
     id: string;
@@ -271,7 +272,7 @@ const NodeDisplayDataFrameFast: React.FC<NodeDisplayDataFrameFastProps> = ({
                                         console
                                     }}
                                 >
-                                    {output.value ? (
+                                    {/* {output.value ? (
                                         <div className="rounded bg-white text-black text-sm max-h-[200px] overflow-auto border border-gray-200">
                                             <div className="sticky top-0 z-10 bg-white font-bold border-b border-gray-300">
                                                 <div className="flex">
@@ -316,7 +317,15 @@ const NodeDisplayDataFrameFast: React.FC<NodeDisplayDataFrameFastProps> = ({
                                         <div className="text-gray-300 text-sm font-mono text-center py-4">
                                             Connect a DataFrame to preview
                                         </div>
+                                    )} */}
+                                    {output.value && output.value.shape && output.value.shape[0] > 0  ? (
+                                        <FastDataTable df={output.value} />
+                                    ) : (
+                                        <div className="text-gray-300 text-sm font-mono text-center py-4">
+                                            Connect a DataFrame to preview
+                                        </div>
                                     )}
+
                                 </div>
 
                             </div>
