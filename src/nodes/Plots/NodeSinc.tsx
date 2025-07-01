@@ -268,24 +268,22 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                         setSelectedInputId(input.id);
                                                         setUpdateInputFunction(updateInputFunction);
                                                         onMouseUpPort(input.id);
-                                                        updateInput(index, { value: input.value });
-                                                        updateInput(index, { connected: selectedOutputId });
+                                                        updateInput(index, {value: input.value});
+                                                        updateInput(index, {connected: selectedOutputId});
                                                         if (addDependencyFunction && removeDependencyFunction) {
-                                                            updateInput(index, { addDependencyFunction: addDependencyFunction });
-                                                            updateInput(index, { removeDependencyFunction: removeDependencyFunction });
+                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
+                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
                                                         }
                                                     }}
                                                     onMouseDown={() => {
                                                         setSelectedOutputId(input.connected)
                                                         setSelectedInputId(input.id);
-                                                        moveEndPoint(input.id);
-                                                        if (input.removeDependencyFunction) {
+                                                        if (input.removeDependencyFunction && input.addDependencyFunction) {
                                                             input.removeDependencyFunction(input.id)
-                                                            setRemoveDependencyFunction(() => input.removeDependencyFunction)
-                                                            updateInput(index, { connected: null })
-                                                        }
-                                                        if (input.addDependencyFunction) {
-                                                            setAddDependencyFunction(() => input.addDependencyFunction)
+                                                            input.connected && setRemoveDependencyFunction(() => input.removeDependencyFunction)
+                                                            input.connected && setAddDependencyFunction(() => input.addDependencyFunction)
+                                                            input.connected && moveEndPoint(input.id);
+                                                            updateInput(index, {connected: null})
                                                         }
                                                     }}
                                                 ></button>
