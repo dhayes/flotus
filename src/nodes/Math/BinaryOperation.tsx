@@ -30,7 +30,7 @@ export interface NodeProps {
     setSelectedOutputId: (id: string | null) => void;
     selectedInputId: string | null;
     selectedOutputId: string | null;
-    computeFn: (a: number, b: number) => number; // optional override
+    computeFn: (a: number, b: number) => number;
     style?: React.CSSProperties;
 }
 
@@ -202,7 +202,7 @@ const NodeBinaryOperation: React.FC<NodeProps> = ({
                         {label}
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
-                        <div className='flex flex-col items-stretch gap-4 text-justify'>
+                        <div className='flex flex-col items-stretch gap-1 text-justify'>
                             {
                                 inputs.map((input, index) => {
                                     const updateInputFunction = () => (value: number) => {
@@ -272,7 +272,7 @@ const NodeBinaryOperation: React.FC<NodeProps> = ({
                                     />
                                 </div>
                                 <div
-                                    className='!mr-0 !px-2 flex items-center'
+                                    className='!mr-0 !px-0 flex items-center'
                                     key={output.id}
                                     ref={el => {
                                         portRefs.current[output.id] = el
