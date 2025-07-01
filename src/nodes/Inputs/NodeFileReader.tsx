@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Draggable from "react-draggable";
 import * as dfd from "danfojs";
-import { ConnectionContext } from "./ConnectionManager";
-import type { Point } from "./types";
-import { StageContext } from "./Stage";
+import { ConnectionContext } from "@/Connections";
+import type { Point } from "@/types";
+import { StageContext } from "@/Stage";
 
 interface NodeProps {
   label: string;
@@ -26,7 +26,7 @@ interface NodeProps {
   style?: React.CSSProperties;
 }
 
-const FileReaderNode: React.FC<NodeProps> = ({
+const NodeFileReader: React.FC<NodeProps> = ({
   label,
   width,
   setAddDependencyFunction,
@@ -243,4 +243,4 @@ const FileReaderNode: React.FC<NodeProps> = ({
   );
 };
 
-export default React.memo(FileReaderNode);
+export default React.memo(NodeFileReader);

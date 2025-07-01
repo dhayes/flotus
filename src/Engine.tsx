@@ -1,8 +1,18 @@
+import './nodeRegistration'; // runs side-effect and registers all nodes
 import React, { useEffect, useId, useState, type JSX } from 'react';
-import Node from './Node';
-import { useMousePosition } from './useMousePosition';
-import NodePlot from './NodePlot';
-import NodeSlider from './NodeSlider';
+import ContextMenu from './ContextMenu';
+import { getNodeComponent } from './NodeRegistry';
+import { nodeCatalog } from './nodeRegistration';
+
+const grouped = nodeCatalog.reduce((acc, node) => {
+  if (!acc[node.category]) acc[node.category] = [];
+  acc[node.category].push(node);
+  return acc;
+}, {} as Record<string, typeof nodeCatalog>);
+
+console.log('Node Catalog:', nodeCatalog);
+console.log('Node Catalog:', grouped);
+console.log('Node Catalog:', Object.entries(grouped).map(([category, nodes]) => ({ category, nodes: nodes.map(n => n.label) })));   
 
 interface EngineProps {
     // Define your props here
@@ -16,6 +26,9 @@ const Engine: React.FC<EngineProps> = (props) => {
     const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
 
+    const [contextMenuOpen, setContextMenuOpen] = useState(false);
+    const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
     useEffect(() => {
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
             console.log(`Connecting output → input: ${selectedOutputId} → ${selectedInputId}`);
@@ -27,47 +40,48 @@ const Engine: React.FC<EngineProps> = (props) => {
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
-    type NodeData = { id: string; name: string; label: string; };
+    type NodeData = { id: string; type: string; label: string };
 
-    const [nodes, setNodes] = useState<NodeData[]>([
-        { id: crypto.randomUUID(), name: 'test0', label: 'test0' },
-        { id: crypto.randomUUID(), name: 'test2', label: 'test2' },
-        { id: crypto.randomUUID(), name: 'test3', label: 'test3' },
-    ]);
+
+    const [nodes, setNodes] = useState<NodeData[]>([]);
 
     const addNode = () => {
         setNodes(prev => [
             ...prev,
-            { id: crypto.randomUUID(), name: `test${prev.length}`, label: `test${prev.length}` },
+        { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
         ]);
     }
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-            <button
-                onClick={addNode}>
-                New Node
-            </button>
-            {nodes.map(nodeData => (
-                <Node
-                    key={nodeData.id}
-                    label={nodeData.label}
-                    setAddDependencyFunction={setAddDependencyFunction}
-                    addDependencyFunction={addDependencyFunction}
-                    setRemoveDependencyFunction={setRemoveDependencyFunction}
-                    removeDependencyFunction={removeDependencyFunction}
-                    setUpdateInputFunction={setUpdateInputFunction}
-                    setSelectedInputId={setSelectedInputId}
-                    setSelectedOutputId={setSelectedOutputId}
-                    selectedInputId={selectedInputId}
-                    selectedOutputId={selectedOutputId}
-                />
-            ))}
-            {
-                <>
-                    <NodePlot
-                        key={useId()}
-                        label="Plot Node"
+        <div style={{ width: '100%', height: '100vh' }} onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenuPosition({ x: e.clientX, y: e.clientY });
+            setContextMenuOpen(true);
+        }}>
+            <ContextMenu
+                isOpen={contextMenuOpen}
+                position={contextMenuPosition}
+                onClose={() => setContextMenuOpen(false)}
+                items={nodeCatalog.map((node) => ({
+                    label: node.label,
+                    category: node.category,
+                    onClick: () => {
+                        setNodes(prev => [
+                            ...prev,
+                            { id: crypto.randomUUID(), type: node.type, label: node.label },
+                        ]);
+                    },
+                }))}
+            />
+            {nodes.map((nodeData) => {
+                const NodeComponent = getNodeComponent(nodeData.type);
+                if (!NodeComponent) return null;
+
+                return (
+                    <NodeComponent
+                        key={nodeData.id}
+                        id={nodeData.id}
+                        label={nodeData.label}
                         setAddDependencyFunction={setAddDependencyFunction}
                         addDependencyFunction={addDependencyFunction}
                         setRemoveDependencyFunction={setRemoveDependencyFunction}
@@ -78,21 +92,8 @@ const Engine: React.FC<EngineProps> = (props) => {
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
                     />
-                    <NodeSlider
-                        key={useId()}
-                        label="Plot Node"
-                        setAddDependencyFunction={setAddDependencyFunction}
-                        addDependencyFunction={addDependencyFunction}
-                        setRemoveDependencyFunction={setRemoveDependencyFunction}
-                        removeDependencyFunction={removeDependencyFunction}
-                        setUpdateInputFunction={setUpdateInputFunction}
-                        setSelectedInputId={setSelectedInputId}
-                        setSelectedOutputId={setSelectedOutputId}
-                        selectedInputId={selectedInputId}
-                        selectedOutputId={selectedOutputId}
-                    />
-                </>
-            }
+                );
+            })}
         </div>
     );
 };

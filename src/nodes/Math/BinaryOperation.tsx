@@ -5,9 +5,9 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
-import type { Point } from '../types';
-import { ConnectionContext } from '../Connections';
-import { StageContext } from '../Stage';
+import type { Point } from '../../types';
+import { ConnectionContext } from '../../Connections';
+import { StageContext } from '../../Stage';
 
 type Input = {
     id: string;
@@ -17,7 +17,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeProps {
+export interface NodeProps {
     id: string;
     label: string;
     width?: number;
@@ -30,10 +30,11 @@ interface NodeProps {
     setSelectedOutputId: (id: string | null) => void;
     selectedInputId: string | null;
     selectedOutputId: string | null;
+    computeFn: (a: number, b: number) => number; // optional override
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const NodeBinaryOperation: React.FC<NodeProps> = ({
     id,
     label,
     width,
@@ -46,6 +47,7 @@ const Node: React.FC<NodeProps> = ({
     setSelectedOutputId,
     selectedInputId,
     selectedOutputId,
+    computeFn,
     style
 }) => {
 
@@ -109,20 +111,18 @@ const Node: React.FC<NodeProps> = ({
         changes: Partial<Pick<Input, 'value' | 'connected' | 'addDependencyFunction' | 'removeDependencyFunction'>>
     ) => setInputs(prev => prev.map((inp, i) => i === index ? { ...inp, ...changes } : inp));
 
-    const addNumbers = (a: number, b: number): number => {
-        return a + b;
-    }
+    //const computeFn = props.computeFn || ((a: number, b: number) => a + b);
 
     const outputID = useId();
 
     const [output, setOutput] = useState({
         id: outputID,
-        value: addNumbers(inputs[0].value, inputs[1].value),
+        value: computeFn(inputs[0].value, inputs[1].value),
         connected: null,
     })
 
     useEffect(() => {
-        const newValue = addNumbers(inputs[0].value, inputs[1].value);
+        const newValue = computeFn(inputs[0].value, inputs[1].value);
         setOutput(prev => ({
             ...prev,
             value: newValue
@@ -306,4 +306,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default Node;
+export default NodeBinaryOperation;

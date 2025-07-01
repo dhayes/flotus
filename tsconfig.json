@@ -1,14 +1,18 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["DOM", "ESNext"],
+    "jsx": "react-jsx",                      // Fixes TS6142
+    "moduleResolution": "Node",
+    "esModuleInterop": true,                // Fixes TS1259
+    "allowSyntheticDefaultImports": true,   // Fixes TS1259
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "skipLibCheck": true                    // Bypass WebGL weirdness (TS2717 etc.)
   },
   "include": ["src"]
 }

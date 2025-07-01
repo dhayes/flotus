@@ -1,13 +1,10 @@
-import React, { useContext, useEffect, useId, useRef, useState } from 'react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from "@/components/ui/card";
-import Draggable, { type DraggableData, type DraggableEvent } from 'react-draggable';
-import type { Point } from '../types';
-import { ConnectionContext } from '../Connections';
-import { StageContext } from '../Stage';
+import React, { useContext, useEffect, useId, useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Draggable, { type DraggableData, type DraggableEvent } from "react-draggable";
+import * as dfd from "danfojs";
+import { ConnectionContext } from "@/Connections";
+import type { Point } from "@/types";
+import { StageContext } from "@/Stage";
 
 type Input = {
     id: string;
@@ -17,7 +14,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeProps {
+interface NodeTitanicDataProps {
     id: string;
     label: string;
     width?: number;
@@ -33,7 +30,7 @@ interface NodeProps {
     style?: React.CSSProperties;
 }
 
-const Node: React.FC<NodeProps> = ({
+const NodeTitanicData: React.FC<NodeTitanicDataProps> = ({
     id,
     label,
     width,
@@ -108,21 +105,33 @@ const Node: React.FC<NodeProps> = ({
         index: number,
         changes: Partial<Pick<Input, 'value' | 'connected' | 'addDependencyFunction' | 'removeDependencyFunction'>>
     ) => setInputs(prev => prev.map((inp, i) => i === index ? { ...inp, ...changes } : inp));
+  
+  const sampleData = {
+    PassengerId: [1, 2, 3, 4, 5],
+    Survived: [0, 1, 1, 1, 0],
+    Pclass: [3, 1, 3, 1, 3],
+    Name: ["Braund", "Cumings", "Heikkinen", "Futrelle", "Allen"],
+    Sex: ["male", "female", "female", "female", "male"],
+    Age: [22, 38, 26, 35, 35],
+    Fare: [7.25, 71.2833, 7.925, 53.1, 8.05]
+  };
 
-    const addNumbers = (a: number, b: number): number => {
-        return a + b;
+
+    const computeOutput = (): dfd.DataFrame | null => {
+      const df = new dfd.DataFrame(sampleData);
+      return df;
     }
 
     const outputID = useId();
 
     const [output, setOutput] = useState({
         id: outputID,
-        value: addNumbers(inputs[0].value, inputs[1].value),
+        value: null,
         connected: null,
     })
 
     useEffect(() => {
-        const newValue = addNumbers(inputs[0].value, inputs[1].value);
+        const newValue = computeOutput();
         setOutput(prev => ({
             ...prev,
             value: newValue
@@ -203,9 +212,9 @@ const Node: React.FC<NodeProps> = ({
                     </CardHeader>
                     <CardContent className="py-4 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
-                            {
+                            {/* {
                                 inputs.map((input, index) => {
-                                    const updateInputFunction = () => (value: number) => {
+                                    const updateInputFunction = () => (value: any) => {
                                         updateInput(index, {value: value});
                                     };
                                     return (
@@ -259,18 +268,10 @@ const Node: React.FC<NodeProps> = ({
                                             </div>
                                         </div>
                                     );
-                                })}
+                                })} */}
 
 
                             <div className='self-end text-right flex !ml-0 pl-0'>
-                                <div>
-                                    <input
-                                        className='w-1/3 py-0 px-2 bg-white rounded'
-                                        type='text'
-                                        value={output.value}
-                                        readOnly
-                                    />
-                                </div>
                                 <div
                                     className='!mr-0 !px-2 flex items-center'
                                     key={output.id}
@@ -282,6 +283,7 @@ const Node: React.FC<NodeProps> = ({
                                         className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${Object.keys(dependencies).length > 0 ? '!bg-gray-400' : '!bg-gray-600'} !p-0 !border-0 !cursor-pointer`}
                                         aria-label="Circle button"
                                         onMouseDown={() => {
+                                            console.log(output)
                                             onMouseDownPort(output.id)
                                             setSelectedOutputId(output.id);
                                             setAddDependencyFunction(makeAddDependencyFunction)
@@ -306,4 +308,4 @@ const Node: React.FC<NodeProps> = ({
     );
 };
 
-export default Node;
+export default NodeTitanicData;
