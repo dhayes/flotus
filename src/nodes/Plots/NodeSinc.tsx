@@ -262,7 +262,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    className={`!mx-2 !mb-[10px] !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`} 
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
