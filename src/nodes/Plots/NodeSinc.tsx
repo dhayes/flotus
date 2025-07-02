@@ -229,7 +229,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
 
     return (
         <Draggable
-            defaultClassName='inline-block draggable-item'
+            defaultClassName='inline-block draggable-item absolute'
             nodeRef={nodeRef}
             onDrag={onDragHandler}
             onStop={onDragHandler} // also update positions when drag ends
