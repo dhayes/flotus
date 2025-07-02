@@ -231,7 +231,7 @@ const NodeDisplayDataFrame: React.FC<NodeDisplayDataFrameProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !mb-[10px] !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`}
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`}
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
