@@ -1,8 +1,8 @@
 // Connections.tsx
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import type { Point } from './types';
-import { useMousePosition } from './useMousePosition';
-import { generateSshapedPath, transformPoint } from './lib/utils';
+import { useMousePosition } from './hooks/useMousePosition';
+import { generateSshapedPath, transformPoint } from './utils';
 
 export interface Connection {
   fromPortId: string;
