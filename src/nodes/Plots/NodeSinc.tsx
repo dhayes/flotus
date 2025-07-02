@@ -256,13 +256,13 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                             className='self-end text-left flex !mr-0 pr-0'
                                         >
                                             <div
-                                                className='!ml-0 !px-0'
+                                                className='!ml-0 !px-0 flex items-center'
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !mb-[10px] !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`} 
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`} 
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
