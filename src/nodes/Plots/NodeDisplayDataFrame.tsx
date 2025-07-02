@@ -225,7 +225,7 @@ const NodeDisplayDataFrame: React.FC<NodeDisplayDataFrameProps> = ({
                                             className='self-start text-left flex !mr-0 pr-0'
                                         >
                                             <div
-                                                className='!ml-0 !px-0'
+                                                className='!ml-0 !px-0 flex items-center'
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
