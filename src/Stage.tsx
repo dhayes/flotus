@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import './Stage.css';
-import { useMousePosition, type MousePosition } from './useMousePosition';
+import { useMousePosition, type MousePosition } from './hooks/useMousePosition';
 
 export const StageContext = createContext(null);
 

@@ -54,6 +54,10 @@ const SliderNode: React.FC<NodeProps> = ({
 
   const [dependencies, setDependencies] = useState<Record<string, (v: any) => void>>({});
 
+  useEffect(() => {
+    updatePortPositions();
+  }, []);
+
   const addDependency = (id: string, f: (v: any) => void) => {
     f(value);
     setDependencies((prev) => ({ ...prev, [id]: f }));
@@ -71,6 +75,8 @@ const SliderNode: React.FC<NodeProps> = ({
     Object.values(dependencies).forEach((f) => f(value));
   }, [value]);
 
+
+
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       if (!nodeRef.current?.contains(e.target as Node)) {
@@ -79,14 +85,20 @@ const SliderNode: React.FC<NodeProps> = ({
         setUpdateInputFunction(undefined)
         setSelectedInputId(null)
         setSelectedOutputId(null)
+        finishConnection(null)
       }
     };
     updatePortPositions();
+
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       document.removeEventListener('mouseup', handleMouseUp);
     };
+  }, []);
+
+  useEffect(() => {
+    updatePortPositions();
   }, [offsetX, offsetY, scale]);
 
   const updatePortPositions = (x = 0, y = 0) => {
@@ -156,7 +168,6 @@ const SliderNode: React.FC<NodeProps> = ({
                       } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
                     aria-label="Output port"
                     onMouseDown={() => {
-                      console.log("slider")
                       startConnection(outputId);
                       setSelectedOutputId(outputId);
                       setAddDependencyFunction(() => (id, f) => addDependency(id, f));
