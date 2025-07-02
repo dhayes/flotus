@@ -120,7 +120,7 @@ const SliderNode: React.FC<NodeProps> = ({
 
   return (
     <Draggable
-      defaultClassName="inline-block draggable-item"
+      defaultClassName="inline-block draggable-item absolute"
       nodeRef={nodeRef}
       onDrag={(e, data) => onDragHandler(e, data)}
       onStop={onDragHandler}
