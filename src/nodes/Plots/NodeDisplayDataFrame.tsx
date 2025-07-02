@@ -17,7 +17,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeDisplayDataFrameFastProps {
+interface NodeDisplayDataFrameProps {
     id: string;
     label: string;
     width?: number;
@@ -33,7 +33,7 @@ interface NodeDisplayDataFrameFastProps {
     style?: React.CSSProperties;
 }
 
-const NodeDisplayDataFrameFast: React.FC<NodeDisplayDataFrameFastProps> = ({
+const NodeDisplayDataFrame: React.FC<NodeDisplayDataFrameProps> = ({
     id,
     label,
     width,
@@ -366,4 +366,4 @@ const NodeDisplayDataFrameFast: React.FC<NodeDisplayDataFrameFastProps> = ({
     );
 };
 
-export default NodeDisplayDataFrameFast;
+export default NodeDisplayDataFrame;
