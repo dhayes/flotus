@@ -2,7 +2,7 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import type { Point } from './types';
 import { useMousePosition } from './hooks/useMousePosition';
-import { generateSshapedPath, transformPoint } from './utils';
+import { generateSshapedPath, transformPoint } from './lib/utils';
 
 export interface Connection {
   fromPortId: string;
