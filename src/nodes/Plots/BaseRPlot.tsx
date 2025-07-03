@@ -36,8 +36,8 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
   type,
   data,
   bins = 10,
-  width = 300,
-  height = 300,
+  width = 250,
+  height = 250,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -68,9 +68,10 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
       });
 
       labels = binEdges.slice(0, -1).map((_, i) =>
-        `${binEdges[i].toFixed(1)}–${binEdges[i + 1].toFixed(1)}`
+        `${binEdges[i].toFixed(0)}`
       );
-
+ 
+      console.log('Histogram Data:', { binEdges, binCounts, labels });
       chartData = {
         labels,
         datasets: [
@@ -108,12 +109,12 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
         scales: {
           x: {
-            title: { display: true, text: 'X' },
+            title: { display: false, text: 'X' },
             grid: { display: false },
             ticks: { color: '#000' },
           },
           y: {
-            title: { display: true, text: 'Y' },
+            title: { display: false, text: 'Y' },
             grid: { display: false },
             ticks: { color: '#000' },
           },

@@ -194,6 +194,14 @@ const NodeSinc: React.FC<NodeSincProps> = ({
 
     const [column, setColumn] = useState<string | null>(null);
 
+    const [data, setData] = useState<dfd.DataFrame | null>(null);
+
+    useEffect(() => {
+        if (output.value) {
+            setData(output.value?.dropNa());
+        }
+    }, [output.value]);
+
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
     const nodeRef = React.useRef<any>(null);
@@ -214,7 +222,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
                         {label} - {selectedOutputId}
                     </CardHeader>
-                    <CardContent className="py-4 px-0 bg-[#696f72]">
+                    <CardContent className="pb-2 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             {
                                 inputs.map((input, index) => {
@@ -224,7 +232,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                     return (
                                         <div
                                             key={input.id}
-                                            className='self-end text-left flex !mr-0 pr-0'
+                                            className='self-start text-left flex !mr-0 pr-0'
                                         >
                                             <div
                                                 className='!ml-0 !px-0'
@@ -261,7 +269,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                     }}
                                                 ></button>
                                             </div>
-                                            <div className='my-1'>
+                                            {/* <div className='my-1'>
                                                 <input
                                                     className='w-1/3 py-0 px-2 bg-white text-black rounded'
                                                     type={input.connected ? 'text' : 'number'}
@@ -269,15 +277,15 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                     value={input.value}
                                                     onChange={e => updateInput(index, { value: Number(e.target.value) })}
                                                 />
-                                            </div>
+                                            </div> */}
                                         </div>
                                     );
                                 })}
 
-                            <div className='flex flex-col !items-center !gap-0'>
-                                <Select value={column} onValueChange={(value) => setColumn(value)} className="w-[180px]">
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select a fruit" />
+                            <div className='flex flex-col !items-left !gap-0 pl-2'>
+                                <Select value={column} onValueChange={(value) => setColumn(value)}>
+                                    <SelectTrigger className="w-[230px] bg-white text-black rounded">
+                                        <SelectValue placeholder="Select a column" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
@@ -292,16 +300,15 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                                <div>
                                    { column && output.value && output.value.shape[0] > 0 && output.value[column] ?  
+                                <div className='mt-4 mb-0 !mr-2 !p-2 bg-white text-black rounded text-center'>
                                     <BaseRPlot
-                                        data={output.value?.column(column).values ?? []}
+                                        data={data ? data[column]?.values : []}
                                         type='histogram'
-                                        width={200}
-                                        height={200}
-                                        /> : false
+                                        width={230}
+                                        height={230}
+                                        /></div> : false
                                    }
-                                </div>
 
                             </div>
 
