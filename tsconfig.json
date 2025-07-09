@@ -3,16 +3,16 @@
     "target": "ESNext",
     "module": "ESNext",
     "lib": ["DOM", "ESNext"],
-    "jsx": "react-jsx",                      // Fixes TS6142
-    "moduleResolution": "Node",
-    "esModuleInterop": true,                // Fixes TS1259
-    "allowSyntheticDefaultImports": true,   // Fixes TS1259
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",              // ← CHANGED from "Node"
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
-    "skipLibCheck": true                    // Bypass WebGL weirdness (TS2717 etc.)
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
