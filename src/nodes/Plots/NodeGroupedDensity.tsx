@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import React, { JSX, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import {
     Card,
     CardContent,
@@ -64,6 +64,10 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     const { offsetX, offsetY, scale } = useContext(StageContext);
 
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    const [plotType, setPlotType] = useState<'density' | 'histogram' | 'hist+density'>('density');
+
+    const [groupColumn, setGroupColumn] = useState<string | null>(null);
 
     useEffect(() => {
         updateAllPortPositions();
@@ -181,6 +185,19 @@ const NodeSinc: React.FC<NodeSincProps> = ({
         };
     }, [offsetX, offsetY, scale]);
 
+    const classifyColumn = (series: dfd.Series): 'numeric' | 'categorical' | 'unknown' => {
+        const isNumeric = (n) => {
+            return !isNaN(parseFloat(n)) && isFinite(n);
+        }
+        const values = series.dropNa().values;
+        const unique = new Set(values);
+        const allNumeric = values.every(v => isNumeric(v) && !isNaN(v));
+        if (allNumeric) return unique.size <= 5 ? 'categorical' : unique.size > 10 ? 'numeric' : 'unknown';
+        if (unique.size > 1 && unique.size < 5) return 'categorical';
+        return 'unknown';
+    };
+
+
 
     const plotRef = useRef<HTMLDivElement>(null);
 
@@ -192,6 +209,18 @@ const NodeSinc: React.FC<NodeSincProps> = ({
 
     const columns = output.value ? output.value?.columns : [];
 
+    const numericColumns = output.value
+        ? output.value.columns.filter(
+            col => classifyColumn(output.value?.column(col)) === 'numeric'
+        )
+        : [];
+
+    const categoricalColumns = output.value
+        ? output.value.columns.filter(
+            col => classifyColumn(output.value?.column(col)) === 'categorical'
+        )
+        : [];
+
     const [column, setColumn] = useState<string | null>(null);
 
     const [data, setData] = useState<dfd.DataFrame | null>(null);
@@ -201,6 +230,67 @@ const NodeSinc: React.FC<NodeSincProps> = ({
             setData(output.value?.dropNa());
         }
     }, [output.value]);
+
+    const generatePlot = () => {
+        return (
+            <div>
+                {column && output.value && output.value.shape[0] > 0 && output.value[column] &&
+                    <>
+                        {groupColumn ? (
+                            (() => {
+                                const colValues = data?.column(column)?.values as number[];
+                                const groupValues = data?.column(groupColumn)?.values as (string | number)[];
+
+                                const groupedMap = new Map<string, number[]>();
+                                colValues?.forEach((v, i) => {
+                                    const group = String(groupValues[i]);
+                                    if (!groupedMap.has(group)) groupedMap.set(group, []);
+                                    groupedMap.get(group)?.push(v);
+                                });
+
+                                const groupedData = Array.from(groupedMap.entries()).map(([group, values]) => ({
+                                    group,
+                                    values,
+                                }));
+
+                                return (
+                                    <div className='mt-2 mb-2 !mr-2 !p-2 bg-white text-black rounded text-center'>
+                                        <BaseRPlot
+                                            data={groupedData}
+                                            type="density-grouped"
+                                            width={280}
+                                            height={280}
+                                            xLabel={column}
+                                            yLabel="Density"
+                                        />
+                                    </div>
+                                );
+                            })()
+                        ) : (
+                            <>
+                                <div className=' mt-2 mb-2 bg-white text-black rounded text-center'>
+                                    <BaseRPlot
+                                        data={data ? data[column]?.values : []}
+                                        type={plotType}
+                                        width={280}
+                                        height={280}
+                                        xLabel={column}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </>
+                }
+            </div>
+        );
+    }
+
+    const [jsx, setJsx] = useState<JSX.Element | null>(null);
+
+    useEffect(() => {
+        setJsx(generatePlot());
+    }, [column, groupColumn, plotType, data, output.value]);
+
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
@@ -216,13 +306,13 @@ const NodeSinc: React.FC<NodeSincProps> = ({
         >
             <div ref={nodeRef} style={style}>
                 <Card
-                    className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
-                    style={width ? { width: `260px` } : { width: '260px' }}
+                    className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !pt-0 !mt-0 !shadow-none !border-none"
+                    style={width ? { width: `300px` } : { width: '300px' }}
                 >
                     <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-                        {label} - {selectedOutputId}
+                        {label}
                     </CardHeader>
-                    <CardContent className="pb-2 px-0 bg-[#696f72]">
+                    <CardContent className="mt-2 pt-2 px-0 bg-[#696f72]">
                         <div className='flex flex-col items-stretch gap-4 text-justify'>
                             {
                                 inputs.map((input, index) => {
@@ -235,7 +325,7 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                             className='self-start text-left flex !mr-0 pr-0'
                                         >
                                             <div
-                                                className='!ml-0 !px-0'
+                                                className='!ml-0 !px-0 flex items-center'
                                                 ref={el => {
                                                     portRefs.current[input.id] = el;
                                                 }}
@@ -284,31 +374,37 @@ const NodeSinc: React.FC<NodeSincProps> = ({
 
                             <div className='flex flex-col !items-left !gap-0 pl-2'>
                                 <Select value={column} onValueChange={(value) => setColumn(value)}>
-                                    <SelectTrigger className="w-[230px] rounded bg-white !text-black">
+                                    <SelectTrigger className="w-[230px] rounded bg-white !text-black !h-8 !text-sm mb-1">
                                         <SelectValue placeholder="Select a column" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             <SelectLabel>Column</SelectLabel>
-                                            {
-                                               columns.length > 0 && columns.map((col) => (
-                                                    <SelectItem key={col} value={col}>
-                                                        {col}
-                                                    </SelectItem>
-                                                )) 
-                                            }
+                                            {numericColumns.map((col) => (
+                                                <SelectItem key={col} value={col}>
+                                                    {col}
+                                                </SelectItem>
+                                            ))}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                                   { column && output.value && output.value.shape[0] > 0 && output.value[column] ?  
-                                <div className='mt-4 mb-0 !mr-2 !p-2 bg-white text-black rounded text-center'>
-                                    <BaseRPlot
-                                        data={data ? data[column]?.values : []}
-                                        type='histogram'
-                                        width={230}
-                                        height={230}
-                                        /></div> : false
-                                   }
+                                <Select value={groupColumn} onValueChange={(value) => setGroupColumn(value)}>
+                                    <SelectTrigger className="w-[230px] rounded bg-white !text-black !h-8 !text-sm mt-1 !mb-0">
+                                        <SelectValue placeholder="Group by (optional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectLabel>Group Column</SelectLabel>
+                                            {categoricalColumns.map((col) => (
+                                                <SelectItem key={col} value={col}>
+                                                    {col}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {jsx}
+
 
                             </div>
 

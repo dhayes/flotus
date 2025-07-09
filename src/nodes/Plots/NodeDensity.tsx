@@ -28,7 +28,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeSincProps {
+interface NodeDensityProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -43,7 +43,7 @@ interface NodeSincProps {
     style?: React.CSSProperties;
 }
 
-const NodeSinc: React.FC<NodeSincProps> = ({
+const NodeDensity: React.FC<NodeDensityProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -182,14 +182,6 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     }, [offsetX, offsetY, scale]);
 
 
-    const plotRef = useRef<HTMLDivElement>(null);
-
-    const sampleData = [
-        { x: 1, y: 5 },
-        { x: 2, y: 3 },
-        { x: 3, y: 6 },
-    ];
-
     const columns = output.value ? output.value?.columns : [];
 
     const [column, setColumn] = useState<string | null>(null);
@@ -269,15 +261,6 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                     }}
                                                 ></button>
                                             </div>
-                                            {/* <div className='my-1'>
-                                                <input
-                                                    className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                                    type={input.connected ? 'text' : 'number'}
-                                                    readOnly={input.connected ? true : false}
-                                                    value={input.value}
-                                                    onChange={e => updateInput(index, { value: Number(e.target.value) })}
-                                                />
-                                            </div> */}
                                         </div>
                                     );
                                 })}
@@ -304,50 +287,13 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                 <div className='mt-4 mb-0 !mr-2 !p-2 bg-white text-black rounded text-center'>
                                     <BaseRPlot
                                         data={data ? data[column]?.values : []}
-                                        type='histogram'
+                                        type='density'
                                         width={230}
                                         height={230}
+                                        xLabel={column}
                                         /></div> : false
                                    }
-
                             </div>
-
-                            {/*                             <div className='self-end text-right flex !ml-0 pl-0'>
-                                <div>
-                                    <input
-                                        className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                        type='text'
-                                        value={output.value}
-                                        readOnly
-                                    />
-                                </div>
-                                <div
-                                    className='!mr-0 !px-2 flex items-center'
-                                    key={output.id}
-                                    ref={el => {
-                                        portRefs.current[output.id] = el
-                                    }}
-                                >
-                                    <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
-                                        aria-label="Circle button"
-                                        onMouseDown={() => {
-                                            onMouseDownPort(output.id)
-                                            setSelectedOutputId(output.id);
-                                            setAddDependencyFunction(makeAddDependencyFunction)
-                                            setRemoveDependencyFunction(makeRemoveDependencyFunction)
-                                        }}
-                                        onMouseUp={() => {
-                                            setAddDependencyFunction(undefined)
-                                            setRemoveDependencyFunction(undefined)
-                                            setUpdateInputFunction(undefined)
-                                            setSelectedInputId(null)
-                                            setSelectedOutputId(null)
-                                        }}
-                                    >
-                                    </button>
-                                </div>
-                            </div> /*} */}
                         </div>
                     </CardContent>
                 </Card>
@@ -356,4 +302,4 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     );
 };
 
-export default React.memo(NodeSinc);
+export default React.memo(NodeDensity);
