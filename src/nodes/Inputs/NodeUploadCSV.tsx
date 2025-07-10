@@ -26,7 +26,7 @@ interface NodeProps {
   style?: React.CSSProperties;
 }
 
-const NodeFileReader: React.FC<NodeProps> = ({
+const NodeUploadCSV: React.FC<NodeProps> = ({
   label,
   width,
   setAddDependencyFunction,
@@ -113,6 +113,7 @@ const NodeFileReader: React.FC<NodeProps> = ({
     } else {
       Object.values(dependencies).forEach((f) => f(null));
     }
+    updatePortPositions();
   }, [df]);
 
   const processDataFrame = (dataFrame: dfd.DataFrame): dfd.DataFrame => {
@@ -256,4 +257,4 @@ const NodeFileReader: React.FC<NodeProps> = ({
   );
 };
 
-export default React.memo(NodeFileReader);
+export default React.memo(NodeUploadCSV);
