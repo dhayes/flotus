@@ -3,6 +3,14 @@ import React, { useContext, useEffect, useId, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Select,
   SelectTrigger,
   SelectValue,
@@ -14,14 +22,6 @@ import * as dfd from "danfojs";
 import { ConnectionContext } from "@/Connections";
 import { StageContext } from "@/Stage";
 import type { Point } from "@/types";
-
-type Input = {
-  id: string;
-  value: any;
-  connected: string | null;
-  removeDependencyFunction: ((id: string) => void) | undefined;
-  addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
-};
 
 const AGG_FUNCS = ["sum", "mean", "count", "min", "max"];
 
@@ -48,7 +48,15 @@ const NodeGroupByAggregate: React.FC<any> = ({
   const inputId = useId();
   const outputId = useId();
 
- const inputsData: Array<Input> = [
+type Input = {
+    id: string;
+    value: any;
+    connected: string | null;
+    removeDependencyFunction: ((id: string) => void) | undefined;
+    addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
+}
+
+  const inputsData: Array<Input> = [
         {
             id: useId(),
             value: null,
@@ -59,10 +67,12 @@ const NodeGroupByAggregate: React.FC<any> = ({
     ]
 
     const [inputs, setInputs] = useState(inputsData)
+
+
   const [output, setOutput] = useState({ id: outputId, value: null, connected: null });
   const [dependencies, setDependencies] = useState<Record<string, (v: any) => void>>({});
 
-  const [groupByCol, setGroupByCol] = useState("");
+  const [groupByCols, setGroupByCols] = useState<string[]>([]);
   const [valueCol, setValueCol] = useState("");
   const [aggFunc, setAggFunc] = useState("sum");
 
@@ -113,11 +123,11 @@ const NodeGroupByAggregate: React.FC<any> = ({
 
   useEffect(() => {
     const df = inputs[0].value;
-    console.log("Input DataFrame:", df);
-    if (df?.shape && groupByCol && valueCol && aggFunc) {
+    if (df?.shape && groupByCols.length > 0 && valueCol && aggFunc) {
       try {
-        const grouped = df.groupby([groupByCol])[aggFunc]([valueCol]);
-        console.log("Grouped Result:", grouped.toString());
+        const keptCols = [...groupByCols, valueCol];
+        const dfFiltered = df.loc({ columns: keptCols });
+        const grouped = dfFiltered.groupby(groupByCols)[aggFunc]([valueCol]);
         setOutput((prev) => ({ ...prev, value: grouped }));
       } catch (e) {
         console.warn("Aggregation failed", e);
@@ -126,7 +136,7 @@ const NodeGroupByAggregate: React.FC<any> = ({
     } else {
       setOutput((prev) => ({ ...prev, value: null }));
     }
-  }, [inputs, groupByCol, valueCol, aggFunc]);
+  }, [inputs, groupByCols, valueCol, aggFunc]);
 
   useEffect(() => {
     Object.values(dependencies).forEach((f) => f(output.value));
@@ -135,9 +145,19 @@ const NodeGroupByAggregate: React.FC<any> = ({
   const allColumns = inputs[0]?.value?.$columns ?? [];
 
   useEffect(() => {
-    if (!groupByCol && allColumns.length > 0) setGroupByCol(allColumns[0]);
-    if (!valueCol && allColumns.length > 1) setValueCol(allColumns[1]);
+    if (groupByCols.length === 0 && allColumns.length > 0) {
+      setGroupByCols([allColumns[0]]);
+    }
+    if (!valueCol && allColumns.length > 1) {
+      setValueCol(allColumns[1]);
+    }
   }, [allColumns]);
+
+  const toggleGroupByCol = (col: string) => {
+    setGroupByCols((prev) =>
+      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+    );
+  };
 
   return (
     <Draggable
@@ -187,16 +207,27 @@ const NodeGroupByAggregate: React.FC<any> = ({
                 );
               })}
 
-              <Select value={groupByCol} onValueChange={setGroupByCol}>
-                <SelectTrigger className="bg-white text-black">
-                  <SelectValue placeholder="Group by" />
-                </SelectTrigger>
-                <SelectContent>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex gap-2 font-bold bg-white text-black">
+                    Group by Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 z-[10000]" onCloseAutoFocus={(e) => e.preventDefault()}>
+                  <DropdownMenuLabel>Columns</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   {allColumns.map((col) => (
-                    <SelectItem key={col} value={col}>{col}</SelectItem>
+                    <DropdownMenuCheckboxItem
+                      key={col}
+                      checked={groupByCols.includes(col)}
+                      onSelect={(e) => e.preventDefault()}
+                      onCheckedChange={() => toggleGroupByCol(col)}
+                    >
+                      {col}
+                    </DropdownMenuCheckboxItem>
                   ))}
-                </SelectContent>
-              </Select>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <Select value={valueCol} onValueChange={setValueCol}>
                 <SelectTrigger className="bg-white text-black">
