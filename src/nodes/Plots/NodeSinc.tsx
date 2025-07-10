@@ -302,51 +302,12 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                 })}
 
                             <div className='flex flex-col !items-center !gap-0'>
-
                                 <div
                                     ref={plotRef}
                                     style={{ pointerEvents: 'auto' }}
                                     className='flex 1 1 auto self-center shadow-[0px_4px_6px_4px_rgba(0,_0,_0,_0.35)]'
                                 />
-
                             </div>
-
-                            {/*                             <div className='self-end text-right flex !ml-0 pl-0'>
-                                <div>
-                                    <input
-                                        className='w-1/3 py-0 px-2 bg-white text-black rounded'
-                                        type='text'
-                                        value={output.value}
-                                        readOnly
-                                    />
-                                </div>
-                                <div
-                                    className='!mr-0 !px-2 flex items-center'
-                                    key={output.id}
-                                    ref={el => {
-                                        portRefs.current[output.id] = el
-                                    }}
-                                >
-                                    <button 
-                                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${Object.keys(dependencies).length > 0 ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
-                                        aria-label="Circle button"
-                                        onMouseDown={() => {
-                                            onMouseDownPort(output.id)
-                                            setSelectedOutputId(output.id);
-                                            setAddDependencyFunction(makeAddDependencyFunction)
-                                            setRemoveDependencyFunction(makeRemoveDependencyFunction)
-                                        }}
-                                        onMouseUp={() => {
-                                            setAddDependencyFunction(undefined)
-                                            setRemoveDependencyFunction(undefined)
-                                            setUpdateInputFunction(undefined)
-                                            setSelectedInputId(null)
-                                            setSelectedOutputId(null)
-                                        }}
-                                    >
-                                    </button>
-                                </div>
-                            </div> /*} */}
                         </div>
                     </CardContent>
                 </Card>

@@ -25,7 +25,7 @@ interface NodeProps {
   style?: React.CSSProperties;
 }
 
-const SliderNode: React.FC<NodeProps> = ({
+const NodeSlider: React.FC<NodeProps> = ({
   label,
   width,
   setAddDependencyFunction,
@@ -193,4 +193,4 @@ const SliderNode: React.FC<NodeProps> = ({
   );
 };
 
-export default React.memo(SliderNode);
+export default React.memo(NodeSlider);
