@@ -139,6 +139,11 @@ const NodeGroupByAggregate: React.FC<any> = ({
   }, [inputs, groupByCols, valueCol, aggFunc]);
 
   useEffect(() => {
+    setGroupByCols([])
+    setValueCol('')
+  }, [inputs])
+
+  useEffect(() => {
     Object.values(dependencies).forEach(f => f(output.value));
   }, [output.value]);
 
