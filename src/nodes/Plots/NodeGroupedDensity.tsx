@@ -186,28 +186,29 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     }, [offsetX, offsetY, scale]);
 
     const classifyColumn = (series: dfd.Series): 'numeric' | 'categorical' | 'unknown' => {
-        const isNumeric = (n) => {
-            return !isNaN(parseFloat(n)) && isFinite(n);
+        const isNumeric = (n: any): boolean => {
+            if (n.dtype == 'int32' || n.dtype == 'float32' || n.dtype == 'float64') {
+                return !isNaN(n) && isFinite(n);
+            }
+            if (typeof n === 'number') {
+                return !isNaN(n) && isFinite(n);
+            }
+            if (typeof n === 'string' || n.dtype == 'string') {
+                const parsed = parseFloat(n);
+                return !isNaN(parsed) && isFinite(parsed);
+            }
+            return false;
         }
-        const values = series.dropNa().values;
+        const valuesRaw = series.dropNa().values;
+        const values: (string | number | boolean)[] = Array.isArray(valuesRaw[0])
+            ? (valuesRaw as any[]).flat()
+            : valuesRaw as (string | number | boolean)[];
         const unique = new Set(values);
-        const allNumeric = values.every(v => isNumeric(v) && !isNaN(v));
-        if (allNumeric) return unique.size <= 5 ? 'categorical' : unique.size > 10 ? 'numeric' : 'unknown';
+        const allNumeric = values.every(v => isNumeric(v) && (typeof v === 'number' ? !isNaN(v) : true));
+        if (allNumeric) return unique.size <= 5 ? 'categorical' : (unique.size > 10 ? 'numeric' : 'unknown');
         if (unique.size > 1 && unique.size < 5) return 'categorical';
         return 'unknown';
     };
-
-
-
-    const plotRef = useRef<HTMLDivElement>(null);
-
-    const sampleData = [
-        { x: 1, y: 5 },
-        { x: 2, y: 3 },
-        { x: 3, y: 6 },
-    ];
-
-    const columns = output.value ? output.value?.columns : [];
 
     const numericColumns = output.value
         ? output.value.columns.filter(
@@ -228,15 +229,21 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     useEffect(() => {
         if (output.value) {
             setData(output.value?.dropNa());
+        } else {
+            setData(null);
+            setColumn(null);
+            setGroupColumn(null);
         }
+        console.log('Output value changed:', output.value);
+        console.log('Output value changed:', output.value?.dropNa());
     }, [output.value]);
 
     const generatePlot = () => {
         return (
             <div>
-                {column && output.value && output.value.shape[0] > 0 && output.value[column] &&
+                {column && output.value && output.value.shape[0] > 0 && output.value[column] && data &&
                     <>
-                        {groupColumn ? (
+                        {groupColumn && data?.columns.includes(groupColumn) ? (
                             (() => {
                                 const colValues = data?.column(column)?.values as number[];
                                 const groupValues = data?.column(groupColumn)?.values as (string | number)[];
@@ -291,6 +298,26 @@ const NodeSinc: React.FC<NodeSincProps> = ({
         setJsx(generatePlot());
     }, [column, groupColumn, plotType, data, output.value]);
 
+                                            
+    useEffect(() => {
+        const handleMouseUp = (e: MouseEvent) => {
+            if (!nodeRef.current?.contains(e.target as Node)) {
+                setAddDependencyFunction(undefined)
+                setRemoveDependencyFunction(undefined)
+                setUpdateInputFunction(undefined)
+                setSelectedInputId(null)
+                setSelectedOutputId(null)
+                finishConnection(null)
+                updateAllPortPositions();
+            }
+        };
+
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
 
     // Create a ref for the draggable node, which is necessary for react-draggable to function correctly   
     // Todo: switch to different draggable library that doesn't require a ref
@@ -331,30 +358,29 @@ const NodeSinc: React.FC<NodeSincProps> = ({
                                                 }}
                                             >
                                                 <button
-                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${input.connected ? '600' : '900'} !hover:bg-gray-700 !p-0 !border-0 ! cursor-pointer`}
+                                                    // className={`!mx-2 !mb-[10px] !px-2 !w-4 !aspect-square !rounded-full !p-0 !border-0 !cursor-pointer ${input.connected ? '!bg-gray-400' : '!bg-gray-600'}`} 
+                                                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${input.connected ? '!bg-gray-400' : '!bg-gray-600'} !p-0 !border-0 !cursor-pointer`}
                                                     aria-label="Circle button"
                                                     onMouseUp={() => {
                                                         setSelectedInputId(input.id);
                                                         setUpdateInputFunction(updateInputFunction);
                                                         onMouseUpPort(input.id);
-                                                        updateInput(index, { value: input.value });
-                                                        updateInput(index, { connected: selectedOutputId });
+                                                        updateInput(index, {value: input.value});
+                                                        updateInput(index, {connected: selectedOutputId});
                                                         if (addDependencyFunction && removeDependencyFunction) {
-                                                            updateInput(index, { addDependencyFunction: addDependencyFunction });
-                                                            updateInput(index, { removeDependencyFunction: removeDependencyFunction });
+                                                            updateInput(index, {addDependencyFunction: addDependencyFunction});
+                                                            updateInput(index, {removeDependencyFunction: removeDependencyFunction});
                                                         }
                                                     }}
                                                     onMouseDown={() => {
                                                         setSelectedOutputId(input.connected)
                                                         setSelectedInputId(input.id);
-                                                        moveEndPoint(input.id);
-                                                        if (input.removeDependencyFunction) {
+                                                        if (input.removeDependencyFunction && input.addDependencyFunction) {
                                                             input.removeDependencyFunction(input.id)
-                                                            setRemoveDependencyFunction(() => input.removeDependencyFunction)
-                                                            updateInput(index, { connected: null })
-                                                        }
-                                                        if (input.addDependencyFunction) {
-                                                            setAddDependencyFunction(() => input.addDependencyFunction)
+                                                            input.connected && setRemoveDependencyFunction(() => input.removeDependencyFunction)
+                                                            input.connected && setAddDependencyFunction(() => input.addDependencyFunction)
+                                                            input.connected && moveEndPoint(input.id);
+                                                            updateInput(index, {connected: null})
                                                         }
                                                     }}
                                                 ></button>
