@@ -69,8 +69,8 @@ const NodeGroupByAggregate: React.FC<any> = ({
   const [dependencies, setDependencies] = useState<Record<string, (v: any) => void>>({});
 
   const [groupByCols, setGroupByCols] = useState<string[]>([]);
-  const [valueCol,    setValueCol]    = useState<string>("");
-  const [aggFunc,     setAggFunc]     = useState<string>("sum");
+  const [valueCol, setValueCol] = useState<string>("");
+  const [aggFunc, setAggFunc] = useState<string>("sum");
 
   const updateInput = (index: number, changes: Partial<Input>) => {
     setInputs(prev => prev.map((inp, i) => i === index ? { ...inp, ...changes } : inp));
@@ -127,7 +127,7 @@ const NodeGroupByAggregate: React.FC<any> = ({
         // drop any extra columns first
         const keep = [...groupByCols, valueCol];
         const filtered = df.loc({ columns: keep });
-        const grouped  = filtered.groupby(groupByCols)[aggFunc]([valueCol]);
+        const grouped = filtered.groupby(groupByCols)[aggFunc]([valueCol]);
         setOutput(prev => ({ ...prev, value: grouped }));
       } catch (e) {
         console.warn("Aggregation failed", e);
@@ -193,9 +193,8 @@ const NodeGroupByAggregate: React.FC<any> = ({
                       ref={el => { portRefs.current[input.id] = el; }}
                     >
                       <button
-                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${
-                          input.connected ? "!bg-gray-400" : "!bg-gray-600"
-                        } !p-0 !border-0 !cursor-pointer`}
+                        className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${input.connected ? "!bg-gray-400" : "!bg-gray-600"
+                          } !p-0 !border-0 !cursor-pointer`}
                         onMouseUp={() => {
                           setSelectedInputId(input.id);
                           setUpdateInputFunction(updateFn);
@@ -291,9 +290,8 @@ const NodeGroupByAggregate: React.FC<any> = ({
                   ref={el => { portRefs.current[output.id] = el; }}
                 >
                   <button
-                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${
-                      output.value ? "!bg-gray-600" : "!bg-gray-900"
-                    } !p-0 !border-0 cursor-pointer`}
+                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full ${output.value ? "!bg-gray-600" : "!bg-gray-900"
+                      } !p-0 !border-0 cursor-pointer`}
                     onMouseDown={() => {
                       startConnection(output.id);
                       setSelectedOutputId(output.id);
