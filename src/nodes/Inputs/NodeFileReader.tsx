@@ -41,7 +41,7 @@ const NodeFileReader: React.FC<NodeProps> = ({
   style
 }) => {
   const { startConnection, finishConnection, updatePortPosition } = useContext(ConnectionContext);
-  const {offsetX, offsetY, scale} = useContext(StageContext);
+  const { offsetX, offsetY, scale } = useContext(StageContext);
 
   const outputId = useId();
   const nodeRef = useRef<any>(null);
@@ -88,36 +88,51 @@ const NodeFileReader: React.FC<NodeProps> = ({
     updatePortPositions();
   }, []);
 
-      useEffect(() => {
-        const handleMouseUp = (e: MouseEvent) => {
-            if (!nodeRef.current?.contains(e.target as Node)) {
-                setAddDependencyFunction(undefined)
-                setRemoveDependencyFunction(undefined)
-                setUpdateInputFunction(undefined)
-                setSelectedInputId(null)
-                setSelectedOutputId(null)
-            }
-        };
-        updatePortPositions();
-        document.addEventListener('mouseup', handleMouseUp);
+  useEffect(() => {
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!nodeRef.current?.contains(e.target as Node)) {
+        setAddDependencyFunction(undefined)
+        setRemoveDependencyFunction(undefined)
+        setUpdateInputFunction(undefined)
+        setSelectedInputId(null)
+        setSelectedOutputId(null)
+      }
+    };
+    updatePortPositions();
+    document.addEventListener('mouseup', handleMouseUp);
 
-        return () => {
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [offsetX, offsetY, scale]);
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [offsetX, offsetY, scale]);
 
 
   useEffect(() => {
-    if (df) {
+    if (df && df.shape[0] > 0) {
       Object.values(dependencies).forEach((f) => f(df));
+    } else {
+      Object.values(dependencies).forEach((f) => f(null));
     }
   }, [df]);
+
+  const processDataFrame = (dataFrame: dfd.DataFrame): dfd.DataFrame => {
+    const missingValues = ["NA", "N/A", "null", "?", ""];
+
+    missingValues.forEach(val => {
+      dataFrame.replace(val, NaN, { inplace: true });
+    });
+
+    return dataFrame;
+  };
 
   const handleFile = async (file: File) => {
     try {
       setFilename(file.name);
       const loadedDf = await dfd.readCSV(file);
-      setDf(loadedDf);
+      // Process the DataFrame to handle missing values
+      const processedLoadedDf = processDataFrame(loadedDf);
+      // Set the DataFrame state
+      setDf(processedLoadedDf);
     } catch (err) {
       console.error("Failed to read file", err);
     }
@@ -192,15 +207,14 @@ const NodeFileReader: React.FC<NodeProps> = ({
           <CardContent className="py-4 px-0 bg-[#696f72]">
             <div className="flex flex-col gap-4 px-4" ref={dropRef}>
               <div
-                className={`border-dashed border-2 rounded p-4 text-sm text-white text-center transition ${
-                  isDragging ? "border-blue-400 bg-blue-900/20" : "border-gray-400"
-                }`}
+                className={`border-dashed border-2 rounded p-4 text-sm text-white text-center transition ${isDragging ? "border-blue-400 bg-blue-900/20" : "border-gray-400"
+                  }`}
               >
                 {isDragging
                   ? "Drop your CSV file here"
                   : filename
-                  ? `Loaded: ${filename}`
-                  : "Drag & drop a CSV/TSV file or click below"}
+                    ? `Loaded: ${filename}`
+                    : "Drag & drop a CSV/TSV file or click below"}
               </div>
 
               <Input type="file" accept=".csv,.tsv" onChange={handleFileChange} />
@@ -214,9 +228,8 @@ const NodeFileReader: React.FC<NodeProps> = ({
                   }}
                 >
                   <button
-                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${
-                      df ? "600" : "900"
-                    } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
+                    className={`!mx-2 !px-2 !w-4 !aspect-square !rounded-full !bg-gray-${df ? "600" : "900"
+                      } !hover:bg-gray-700 !p-0 !border-0 cursor-pointer`}
                     aria-label="Output port"
                     onMouseDown={() => {
                       startConnection(outputId);
