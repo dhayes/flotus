@@ -279,6 +279,7 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
             type: chartType,
             data: chartData,
             options: {
+                animation: false,
                 responsive: false,
                 maintainAspectRatio: false,
                 interaction: { mode: undefined },
