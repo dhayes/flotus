@@ -2,7 +2,7 @@
 
 import React, { useLayoutEffect, useRef } from 'react';
 import Plotly, { Data } from 'plotly.js-dist-min';
-import { createNodeComponent } from '../createNodeComponent';
+import { createNodeComponent } from '../../createNodeComponent';
 
 const NodeSinc = createNodeComponent({
     label: 'Sinc',

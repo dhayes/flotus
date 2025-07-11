@@ -147,7 +147,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
         nodeRef={nodeRef}
         onDrag={updatePortPositions}
         onStop={updatePortPositions}
-        cancel="button,input,select"
+        cancel="button,input,select,.plotly"
       >
         <div ref={nodeRef} style={style}>
           <Card

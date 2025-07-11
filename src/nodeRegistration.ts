@@ -15,15 +15,16 @@ for (const path in modules) {
   const mod: any = modules[path];
   const Component = mod.default;
 
-  // Match folder/category and Node name
-  const match = path.match(/\.\/nodes\/(.*?)\/Node(.*?)\.tsx$/);
+  // Extract relative path parts
+  const match = path.match(/^\.\/nodes\/(.*)\/Node(.*?)\.tsx$/);
   if (!match) continue;
 
-  const category = match[1]; // e.g. "Math"
-  const rawName = match[2];  // e.g. "Add"
-  const type = `${category.toLowerCase()}/${rawName.toLowerCase()}`; // e.g. "math/add"
+  const folderPath = match[1]; // full relative path e.g. "Math/Arithmetic"
+  const rawName = match[2];    // e.g. "Add" from "NodeAdd"
 
-  const label = rawName.replace(/([a-z])([A-Z])/g, '$1 $2'); // Add → "Add", LinePlot → "Line Plot"
+  const type = `${folderPath}/${rawName}`.toLowerCase(); // e.g. "math/arithmetic/add"
+  const label = rawName.replace(/([a-z])([A-Z])/g, '$1 $2'); // "FooBar" -> "Foo Bar"
+  const category = folderPath; // preserve category path for now
 
   if (Component) {
     registerNode(type, Component);
