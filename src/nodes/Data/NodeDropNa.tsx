@@ -5,6 +5,7 @@ import { createNodeComponent } from "../createNodeComponent";
 
 const NodeDropNA = createNodeComponent({
   label: "Drop NA",
+    description: "Takes in a dataframe and drops rows containing NA values",
   width: 260,
   initialInputs: 1,
   initialState: {

@@ -13,6 +13,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ConnectionContext } from "@/Connections";
 import { StageContext } from "@/Stage";
 import type { Point } from "@/types";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface InputPortConfig {
   id: string;
@@ -30,6 +36,7 @@ interface OutputPort {
 
 interface NodeFactoryProps<State> {
   label: string;
+  description: string;
   width?: number;
   initialState: State;
   initialInputs: number;
@@ -154,8 +161,20 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
             className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
             style={width ? { width: `${width}px` } : { width: config.width || 240 }}
           >
-            <CardHeader className="bg-[#3b3f42] text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
-              {label}
+            <CardHeader className="text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
+              <div className="flex justify-between items-center">
+                <span>{label}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild className="rounded-full">
+                    <button className="hover:text-gray-300 !rounded-full !p-0 my-1 mr-0 border-0 !bg-[#53585a]">
+                      <Info className="w-4 h-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs bg-black text-white p-2 text-xs rounded">
+                    {config.description}
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </CardHeader>
             <CardContent className="pt-3 pb-4 px-0 bg-[#696f72]">
               <div className="flex flex-col gap-4 px-4">
