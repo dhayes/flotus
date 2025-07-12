@@ -18,6 +18,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  TooltipArrow,
 } from "@/components/ui/tooltip";
 
 interface InputPortConfig {
@@ -166,12 +167,13 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                 <span>{label}</span>
                 <Tooltip>
                   <TooltipTrigger asChild className="rounded-full">
-                    <button className="hover:text-gray-300 !rounded-full !p-0 my-1 mr-0 border-0 !bg-[#53585a]">
+                    <button className="hover:text-gray-300 !rounded-full !p-0 my-0 border-0 !bg-[#53585a]">
                       <Info className="w-4 h-4" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-black text-white p-2 text-xs rounded">
+                  <TooltipContent className="max-w-xs bg-black text-white p-2 mr-1 text-xs rounded">
                     {config.description}
+                    <TooltipArrow className="pb-1" style={{ height: 15, width: 14 }} />
                   </TooltipContent>
                 </Tooltip>
               </div>

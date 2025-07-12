@@ -1,6 +1,8 @@
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
+const TooltipArrow = TooltipPrimitive.Arrow;
+
 import { cn } from "@/lib/utils"
 
 function TooltipProvider({
@@ -56,4 +58,5 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow }
