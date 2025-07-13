@@ -1,3 +1,4 @@
+// BaseRPlot.tsx
 import React, { useEffect, useRef } from 'react';
 import {
     Chart,
@@ -29,6 +30,7 @@ Chart.register(
 type Point = { x: number; y: number };
 type GroupedData = { group: string; values: number[] };
 type GroupedPoints = { group: string; points: Point[] };
+type BarGroup = { group: string; values: { x: string; y: number }[] };
 
 type BaseRPlotProps = {
     type:
@@ -39,12 +41,17 @@ type BaseRPlotProps = {
     | 'scatter'
     | 'density-grouped'
     | 'histogram-grouped'
-    | 'scatter-grouped';
+    | 'scatter-grouped'
+    | 'bar';
     data:
     | number[]
     | { x: number; y: number }[]
     | { group: string; values: number[] }[]
-    | { group: string; points: { x: number; y: number }[] }[];
+    | { group: string; points: { x: number; y: number }[] }[]
+    | { group: string; values: { x: number; y: number }[] }[]
+    | { x: string; y: number }[]
+    | BarGroup[];
+
     bins?: number;
     bandwidth?: number;
     width?: number;
@@ -275,6 +282,29 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
             chartType = 'scatter';
         }
 
+        else if (type === 'bar') {
+            const groups = data as BarGroup[];
+            const xLabels = Array.from(
+                new Set(groups.flatMap((g) => g.values.map((v) => v.x)))
+            );
+
+            chartData = {
+                labels: xLabels,
+                datasets: groups.map((g, i) => ({
+                    label: g.group,
+                    data: xLabels.map((x) => {
+                        const found = g.values.find((v) => v.x === x);
+                        return found ? found.y : 0;
+                    }),
+                    backgroundColor: colors[i % colors.length],
+                    borderColor: '#000',
+                    borderWidth: 1,
+                })),
+            };
+            chartType = 'bar';
+        }
+
+
         chartRef.current = new Chart(ctx, {
             type: chartType,
             data: chartData,
@@ -289,7 +319,7 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
                 },
                 scales: {
                     x: {
-                        type: ['histogram', 'hist+density', 'histogram-grouped'].includes(type) ? 'category' : 'linear',
+                        type: ['histogram', 'hist+density', 'histogram-grouped', 'bar'].includes(type) ? 'category' : 'linear',
                         title: {
                             display: xLabel ? true : false,
                             text: xLabel || 'X',
@@ -306,10 +336,9 @@ export const BaseRPlot: React.FC<BaseRPlotProps> = ({
                         grid: { display: false },
                     },
                 },
-
             },
         });
     }, [type, data, bins, bandwidth]);
 
-    return <canvas ref={canvasRef} width={width} height={height} />;
+    return <canvas ref={canvasRef} width={width} height={height} className='p-5' />;
 };

@@ -28,7 +28,7 @@ type Input = {
     addDependencyFunction: ((id: string, f: (value: any) => void) => void) | undefined;
 }
 
-interface NodeSincProps {
+interface NodeProps {
     label: string;
     width?: number;
     setAddDependencyFunction: React.Dispatch<React.SetStateAction<((id: string, f: (value: any) => void) => void) | undefined>>;
@@ -43,7 +43,7 @@ interface NodeSincProps {
     style?: React.CSSProperties;
 }
 
-const NodeSinc: React.FC<NodeSincProps> = ({
+const NodeHist: React.FC<NodeProps> = ({
     label,
     width,
     setAddDependencyFunction,
@@ -356,4 +356,4 @@ const NodeSinc: React.FC<NodeSincProps> = ({
     );
 };
 
-export default React.memo(NodeSinc);
+export default React.memo(NodeHist);
