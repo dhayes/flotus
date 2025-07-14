@@ -13,6 +13,8 @@ type NodeProps = {
   setSelectedOutputId: (id: string | null) => void;
   selectedInputId: string | null;
   selectedOutputId: string | null;
+  openContextMenu: any;
+  removeNode: any;
 };
 
 const nodeRegistry: Record<string, ComponentType<NodeProps>> = {};

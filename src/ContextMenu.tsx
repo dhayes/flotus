@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import React from "react";
 
-type ContextMenuItem = {
+export type ContextMenuItem = {
   onClick: () => void;
   label: string;
   category?: string; // e.g. "Math/Arithmetic"

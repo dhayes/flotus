@@ -59,6 +59,7 @@ interface NodeFactoryProps<State> {
 
 export function createNodeComponent<State>(config: NodeFactoryProps<State>): React.FC<any> {
   return function NodeComponent({
+    id,
     label = config.label,
     width,
     setAddDependencyFunction,
@@ -70,9 +71,11 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
     setSelectedOutputId,
     selectedInputId,
     selectedOutputId,
+    openContextMenu,
+    removeNode,
     style,
   }) {
-    const { startConnection, finishConnection, updatePortPosition, moveEndPoint } =
+    const { startConnection, finishConnection, updatePortPosition, moveEndPoint, deleteConnectons } =
       useContext(ConnectionContext);
     const { offsetX, offsetY, scale } = useContext(StageContext);
 
@@ -151,13 +154,34 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
 
     return (
       <Draggable
-        defaultClassName="inline-block draggable-item absolute"
+        defaultClassName="inline-block draggable-item absolute node"
         nodeRef={nodeRef}
         onDrag={updatePortPositions}
         onStop={updatePortPositions}
         cancel="button,input,select,.plotly"
       >
-        <div ref={nodeRef} style={style}>
+        <div ref={nodeRef} style={style} onContextMenu={(e: any) => {
+          e.preventDefault();
+          console.log(e)
+          openContextMenu(
+            {
+              x: e.clientX,
+              y: e.clientY,
+            },
+            [
+              {
+                label: "Delete Node",
+                category: "Node",
+                icon: "trash-2",
+                onClick: () => {
+                  removeNode(id);
+                  deleteConnectons(Object.entries(portRefs.current).map(([id]) => id))
+                }
+              }
+            ]
+          );
+        }}
+        >
           <Card
             className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
             style={width ? { width: `${width}px` } : { width: config.width || 240 }}
@@ -266,7 +290,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
             </CardContent>
           </Card>
         </div>
-      </Draggable>
+      </Draggable >
     );
   };
 }

@@ -10,19 +10,20 @@ export interface Connection {
 }
 
 export const ConnectionContext = createContext({
-  startConnection: (portId: string) => {},
-  finishConnection: (portId: string) => {},
-  updatePortPosition: (portId: string, p: Point) => {},
-  deleteConnection: (toPortId: string) => {},
-  moveEndPoint: (toPortId: string) => {},
+  startConnection: (portId: string) => { },
+  finishConnection: (portId: string) => { },
+  updatePortPosition: (portId: string, p: Point) => { },
+  deleteConnection: (toPortId: string) => { },
+  moveEndPoint: (toPortId: string) => { },
+  deleteConnectons: (portIds: string[]) => { },
 });
 
 interface ConnectionsProps {
   children: React.ReactNode;
-  offset: {x: number, y: number, scale: number};
+  offset: { x: number, y: number, scale: number };
 }
 
-const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
+const Connections: React.FC<ConnectionsProps> = ({ offset, children }) => {
 
   // Map each portId → its current center {x,y}
   const [portPositions, setPortPositions] = useState<Record<string, Point>>({});
@@ -36,9 +37,9 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
   const mousePosition = useMousePosition();
 
   useEffect(() => {
-      setPortPositions(prev => (
-        mousePosition ? { ...prev, ['mouse']: mousePosition } : prev
-      ));
+    setPortPositions(prev => (
+      mousePosition ? { ...prev, ['mouse']: mousePosition } : prev
+    ));
   }, [mousePosition]);
 
   // Called by <Node> whenever a port’s center changes
@@ -49,10 +50,10 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
   // Called onMouseDown of a port
   const startConnection = (portId: string) => {
     setPendingFromPort(() => portId);
-      setConnections(prev => [
-        ...prev,
-        { fromPortId: portId, toPortId: 'mouse' },
-      ]);
+    setConnections(prev => [
+      ...prev,
+      { fromPortId: portId, toPortId: 'mouse' },
+    ]);
   };
 
   // Called onMouseUp of a port
@@ -71,6 +72,20 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
     setConnections(prev => prev.filter(
       connection => !(connection.toPortId === toPortId)
     ));
+  };
+
+  const deleteConnectionFromPort = (portId: string) => {
+    setConnections(prev => prev.filter(
+      connection => !(connection.toPortId === portId)
+    ));
+  };
+
+  const deleteConnectons = (portIds: string[]) => {
+    portIds.forEach(portId => {
+      setConnections(prev => prev.filter(
+        connection => ![connection.fromPortId, connection.toPortId].includes(portId)
+      ));
+    });
   };
 
   const getOtherPortId = (portId: string) => {
@@ -94,49 +109,49 @@ const Connections: React.FC<ConnectionsProps> = ({offset, children}) => {
     startConnection(otherPortId || '');
   }
 
-    return (
-        <ConnectionContext.Provider
-            value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint }}
+  return (
+    <ConnectionContext.Provider
+      value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint, deleteConnectons }}
+    >
+      <div>
+        {children}
+        <svg
+          style={{
+            width: '100%',
+            height: '100vh',
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}
         >
-        <div>
-                {children}
-                <svg
-                    style={{
-                        width: '100%',
-                        height: '100vh',
-                        position: 'absolute',
-                        inset: 0,
-                        pointerEvents: 'none',
-                        zIndex: 9999,
-                    }}
-                >
-                {
-                    connections.map((conn, idx) => {
+          {
+            connections.map((conn, idx) => {
 
-                        const p1 = portPositions[conn.fromPortId];
-                        const ap1 = transformPoint(p1.x, p1.y, offset.scale, offset.x, offset.y)
-                        const p2 = portPositions[conn.toPortId];
-                        const ap2 = transformPoint(p2.x, p2.y, offset.scale, offset.x, offset.y)
-                        if (!p1 || !p2) return null;
+              const p1 = portPositions[conn.fromPortId];
+              const ap1 = transformPoint(p1.x, p1.y, offset.scale, offset.x, offset.y)
+              const p2 = portPositions[conn.toPortId];
+              const ap2 = transformPoint(p2.x, p2.y, offset.scale, offset.x, offset.y)
+              if (!p1 || !p2) return null;
 
-                        const d = generateSshapedPath(ap1.x, ap1.y, ap2.x, ap2.y, 0.2);
+              const d = generateSshapedPath(ap1.x, ap1.y, ap2.x, ap2.y, 0.2);
 
-                        return (
-                            <path
-                                key={idx}
-                                d={d}
-                                stroke="grey"
-                                strokeWidth={3}
-                                fill="none"
-                                style={{ filter: 'drop-shadow(0 0 2px black)' }}
-                            />
-                        );
-                    }
-                )}
-            </svg>
-        </div>
-        </ConnectionContext.Provider>
-    );
+              return (
+                <path
+                  key={idx}
+                  d={d}
+                  stroke="grey"
+                  strokeWidth={3}
+                  fill="none"
+                  style={{ filter: 'drop-shadow(0 0 2px black)' }}
+                />
+              );
+            }
+            )}
+        </svg>
+      </div>
+    </ConnectionContext.Provider>
+  );
 };
 
 export default Connections;
