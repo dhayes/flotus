@@ -117,7 +117,7 @@ const NodeSidebar: React.FC = () => {
     if (!open) {
         return (
             <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
-                <SidebarTrigger className="!text-white hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
+                <SidebarTrigger className="!text-white !bg-zinc-900 hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
             </div>
         )
     } 
@@ -133,7 +133,7 @@ const NodeSidebar: React.FC = () => {
                         Flotix
                     </div>
                     <div className="flex-grow text-end !p-2 !border-none !text-white !hover:text-white">
-                        <SidebarTrigger className="!text-white hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
+                        <SidebarTrigger className="!text-white !bg-zinc-900 hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
                     </div>
                 </div>
                 <div>
