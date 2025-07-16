@@ -1,9 +1,11 @@
 // App.tsx
+
 import "./App.css";
 import Stage from "./Stage";
 import Engine from "./Engine";
 import Connections from "./Connections";
 import NodeSidebar from "./NodeSidebar";
+import { NodeEngineProvider } from "./NodeEngineContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -17,18 +19,20 @@ function App() {
   });
 
   return (
-    <SidebarProvider>
-      <DndProvider backend={HTML5Backend}>
-        <div className="flex h-screen w-screen overflow-hidden">
-          <NodeSidebar />
-          <Stage setOffset={setOffset}>
-            <Connections offset={offset}>
-              <Engine />
-            </Connections>
-          </Stage>
-        </div>
-      </DndProvider>
-    </SidebarProvider>
+    <NodeEngineProvider>
+      <SidebarProvider>
+        <DndProvider backend={HTML5Backend}>
+          <div className="flex h-screen w-screen overflow-hidden">
+            <NodeSidebar />
+            <Stage setOffset={setOffset}>
+              <Connections offset={offset}>
+                <Engine />
+              </Connections>
+            </Stage>
+          </div>
+        </DndProvider>
+      </SidebarProvider>
+    </NodeEngineProvider>
   );
 }
 

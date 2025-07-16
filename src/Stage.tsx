@@ -1,12 +1,18 @@
+// Stage.tsx
+
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import './Stage.css';
 import { useMousePosition, type MousePosition } from './hooks/useMousePosition';
 import { useDrop } from 'react-dnd';
+import { useNodeEngine } from "./NodeEngineContext";
 
 export const StageContext = createContext(null);
 
+
 const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children }) => {
+
+    const { createNode } = useNodeEngine();
 
     const [scale, setScale] = useState(1);
 
@@ -33,6 +39,8 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
             console.log("Drop node", item.type, { x, y });
             // Call your real node-creation logic here
             // e.g. createNode(item.type, { x, y });
+            createNode(item.type, { x, y });
+            setIsPanning(false)
         },
     });
 

@@ -15,6 +15,7 @@ type NodeProps = {
   selectedOutputId: string | null;
   openContextMenu: any;
   removeNode: any;
+  style: any;
 };
 
 const nodeRegistry: Record<string, ComponentType<NodeProps>> = {};

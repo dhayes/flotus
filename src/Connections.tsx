@@ -122,7 +122,7 @@ const Connections: React.FC<ConnectionsProps> = ({ offset, children }) => {
             position: 'absolute',
             inset: 0,
             pointerEvents: 'none',
-            zIndex: 9999,
+            zIndex: 997,
           }}
         >
           {

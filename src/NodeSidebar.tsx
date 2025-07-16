@@ -11,9 +11,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { nodeCatalog } from "./nodeRegistration";
-import { cn } from "@/lib/utils";
+import { cn, getWindowCenter } from "@/lib/utils";
 import { useDrag } from "react-dnd";
 import { ChevronDown, ChevronRight, ChartNetwork } from "lucide-react";
+import { useNodeEngine } from "./NodeEngineContext"; 
 
 interface TreeNode {
     name: string;
@@ -54,6 +55,7 @@ function buildTree(catalog = nodeCatalog): TreeNode[] {
 const TreeNodeItem: React.FC<{ node: TreeNode; depth?: number }> = ({ node, depth = 0 }) => {
     const [expanded, setExpanded] = useState(true);
     const isBranch = !!node.children && node.children.length > 0;
+    const { createNode } = useNodeEngine();
 
     const [{ isDragging }, dragRef] = useDrag(() => ({
         type: "NODE",
@@ -80,6 +82,7 @@ const TreeNodeItem: React.FC<{ node: TreeNode; depth?: number }> = ({ node, dept
                             <div
                                 ref={(el) => { if (el) dragRef(el); }}
                                 className={cn("text-sm text-white p-1 hover:bg-zinc-700 rounded", isDragging && "opacity-50")}
+                                onClick={() => node.node && createNode(node.node?.type, getWindowCenter())}
                             >
                                 {node.name}
                             </div>
@@ -113,13 +116,14 @@ const NodeSidebar: React.FC = () => {
     ), [search]);
     if (!open) {
         return (
-            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white">
+            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
                 <SidebarTrigger className="!text-white hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
             </div>
         )
     } 
     return (
-        <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="bg-zinc-900 text-white h-full !border-r-zinc-700">
+            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
+        <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="bg-zinc-900 text-white h-full !border-r-zinc-700 !absolute !z-999 !top-0">
             <SidebarHeader className="p-3 border-b !border-none bg-zinc-900">
                 <div className="flex items-center">
                     <div className="flex-none">
@@ -147,6 +151,7 @@ const NodeSidebar: React.FC = () => {
                 ))}
             </SidebarContent>
         </Sidebar>
+        </div>
     );
 };
 

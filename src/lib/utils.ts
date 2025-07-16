@@ -50,3 +50,9 @@ export function transformPoint(
     y: (y - offsetY) / scale,
   };
 }
+
+export function getWindowCenter() {
+  const x = window.innerWidth / 2;
+  const y = window.innerHeight / 2;
+  return { x, y };
+}
