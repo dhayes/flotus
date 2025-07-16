@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ConnectionContext } from "@/Connections";
 import { StageContext } from "@/Stage";
 import type { Point } from "@/types";
-import { Info } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import {
   Tooltip,
   TooltipTrigger,
@@ -28,6 +28,9 @@ interface InputPortConfig {
   removeDependencyFunction?: (id: string) => void;
   addDependencyFunction?: (id: string, f: (value: any) => void) => void;
 }
+
+
+
 
 interface OutputPort {
   id: string;
@@ -172,8 +175,13 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
               {
                 label: "Delete Node",
                 category: "Node",
-                icon: "trash-2",
+                icon: <Trash2 />,
                 onClick: () => {
+                  inputs.forEach(input => {
+                    if (input.removeDependencyFunction) {
+                      input.removeDependencyFunction(input.id)
+                    }
+                  })
                   removeNode(id);
                   deleteConnectons(Object.entries(portRefs.current).map(([id]) => id))
                 }
@@ -218,11 +226,11 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                           className={`!mx-0 !px-1 !w-4 !aspect-square !rounded-full ${input.connected ? "!bg-gray-400" : "!bg-gray-600"
                             } !p-0 !border-0 !cursor-pointer`}
                           onMouseUp={() => {
-                            setSelectedInputId(input.id);
-                            setUpdateInputFunction(updateFn);
-                            finishConnection(input.id);
-                            updateInput(index, { connected: selectedOutputId });
-                            if (addDependencyFunction && removeDependencyFunction) {
+                            !input.connected && setSelectedInputId(input.id);
+                            !input.connected && setUpdateInputFunction(updateFn);
+                            !input.connected && finishConnection(input.id);
+                            !input.connected && updateInput(index, { connected: selectedOutputId });
+                            if (addDependencyFunction && removeDependencyFunction && (!input.connected)) {
                               updateInput(index, { addDependencyFunction, removeDependencyFunction });
                             }
                           }}
@@ -264,7 +272,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                         }}
                       >
                         <button
-                          className={`!ml-1 !px-2 !w-4 !aspect-square !rounded-full ${output.value ? "!bg-gray-600" : "!bg-gray-900"
+                          className={`!ml-1 !px-2 !w-4 !aspect-square !rounded-full ${Object.entries(dependencies).length > 0 ? "!bg-gray-400" : "!bg-gray-600"
                             } !p-0 !border-0 cursor-pointer`}
                           onMouseDown={() => {
                             startConnection(output.id);
