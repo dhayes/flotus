@@ -5,6 +5,7 @@ type NodeMeta = {
   category: string;
   label: string;
   component: any;
+  description?: string;
 };
 
 export const nodeCatalog: NodeMeta[] = [];

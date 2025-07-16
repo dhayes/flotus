@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useRef, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import './Stage.css';
 import { useMousePosition, type MousePosition } from './hooks/useMousePosition';
+import { useDrop } from 'react-dnd';
 
 export const StageContext = createContext(null);
 
@@ -18,6 +19,22 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
     const mousePosition = useMousePosition();
 
     const [initialMousePosition, setInitialMousePosition] = useState<MousePosition>()
+
+    const [, dropRef] = useDrop({
+        accept: "NODE",
+        drop: (item: { type: string }, monitor) => {
+            const clientOffset = monitor.getClientOffset();
+            if (!clientOffset || !ref.current) return;
+
+            const rect = ref.current.getBoundingClientRect();
+            const x = (clientOffset.x - rect.left - currentX) / scale;
+            const y = (clientOffset.y - rect.top - currentY) / scale;
+
+            console.log("Drop node", item.type, { x, y });
+            // Call your real node-creation logic here
+            // e.g. createNode(item.type, { x, y });
+        },
+    });
 
     const onMouseUp = (e: MouseEvent) => {
         setIsPanning(false)
@@ -93,7 +110,10 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
 
     return (
         <StageContext value={{ offsetX: currentX, offsetY: currentY, scale: scale }}>
-            <div style={{ width: '100vw', height: '100%', overflow: 'hidden' }} onWheel={handleWheel} className='grid-background'>
+            <div ref={(el) => {
+                ref.current = el;
+                dropRef(el); // attach drop target
+            }} style={{ width: '100vw', height: '100%', overflow: 'hidden' }} onWheel={handleWheel} className='grid-background'>
                 <div
                     ref={ref}
                     style={{
