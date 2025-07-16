@@ -1,9 +1,12 @@
+// Engine.tsx
+
 import './nodeRegistration'; // runs side-effect and registers all nodes
 import React, { useContext, useEffect, useId, useState, type JSX } from 'react';
 import { ConnectionContext } from "@/Connections";
 import ContextMenu, { ContextMenuItem } from './ContextMenu';
 import { getNodeComponent } from './NodeRegistry';
 import { nodeCatalog } from './nodeRegistration';
+import { useNodeEngine } from './NodeEngineContext';
 
 const grouped = nodeCatalog.reduce((acc, node) => {
     if (!acc[node.category]) acc[node.category] = [];
@@ -44,21 +47,23 @@ const Engine: React.FC<EngineProps> = (props) => {
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
-    type NodeData = { id: string; type: string; label: string };
+    //type NodeData = { id: string; type: string; label: string };
 
 
-    const [nodes, setNodes] = useState<NodeData[]>([]);
+    const { nodes, createNode, removeNode } = useNodeEngine();
 
-    const addNode = () => {
-        setNodes(prev => [
-            ...prev,
-            { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
-        ]);
-    }
+    // const [nodes, setNodes] = useState<NodeData[]>([]);
 
-    const removeNode = (id: string) => {
-        setNodes(prev => prev.filter(node => node.id !== id));
-    }
+    // const addNode = () => {
+    //     setNodes(prev => [
+    //         ...prev,
+    //         { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
+    //     ]);
+    // }
+
+    // const removeNode = (id: string) => {
+    //     setNodes(prev => prev.filter(node => node.id !== id));
+    // }
 
     const openContextMenu = (position: { x: number; y: number }, items: Array<ContextMenuItem>) => {
         setContextMenuOpen(true);
@@ -68,15 +73,15 @@ const Engine: React.FC<EngineProps> = (props) => {
 
     return (
         <div>
-            {nodes.map((nodeData) => {
-                const NodeComponent = getNodeComponent(nodeData.type);
+            {nodes.map((node) => {
+                const NodeComponent = getNodeComponent(node.type);
                 if (!NodeComponent) return null;
 
                 return (
                     <NodeComponent
-                        key={nodeData.id}
-                        id={nodeData.id}
-                        label={nodeData.label}
+                        key={node.id}
+                        id={node.id}
+                        label={node.label}
                         setAddDependencyFunction={setAddDependencyFunction}
                         addDependencyFunction={addDependencyFunction}
                         setRemoveDependencyFunction={setRemoveDependencyFunction}
@@ -87,11 +92,12 @@ const Engine: React.FC<EngineProps> = (props) => {
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
                         openContextMenu={openContextMenu}
-                        removeNode={() => removeNode(nodeData.id)}
+                        removeNode={() => removeNode(node.id)}
+                        style={{ position: "absolute", left: node.x, top: node.y }}
                     />
                 );
             })}
-            <div style={{ width: '100%', height: '100vh' }} onContextMenu={(e) => {
+            <div style={{ width: '100%', height: '100vh', zIndex: 998 }} onContextMenu={(e) => {
                 e.preventDefault();
                 console.log(e)
                 // setContextMenuPosition({ x: e.clientX, y: e.clientY });
@@ -100,10 +106,12 @@ const Engine: React.FC<EngineProps> = (props) => {
                     label: node.label,
                     category: node.category,
                     onClick: () => {
-                        setNodes(prev => [
-                            ...prev,
-                            { id: crypto.randomUUID(), type: node.type, label: node.label },
-                        ]);
+                        // setNodes(prev => [
+                        //     ...prev,
+                        //     { id: crypto.randomUUID(), type: node.type, label: node.label },
+                        // ]);
+                       console.log("newnode") 
+                       createNode(node.type, {x: e.clientX, y: e.clientY})
                     },
                 })));
             }}>

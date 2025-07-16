@@ -113,13 +113,14 @@ const NodeSidebar: React.FC = () => {
     ), [search]);
     if (!open) {
         return (
-            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white">
+            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
                 <SidebarTrigger className="!text-white hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
             </div>
         )
     } 
     return (
-        <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="bg-zinc-900 text-white h-full !border-r-zinc-700">
+            <div className="flex-none !p-2 !pt-5 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
+        <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="bg-zinc-900 text-white h-full !border-r-zinc-700 !absolute !z-999 !top-0">
             <SidebarHeader className="p-3 border-b !border-none bg-zinc-900">
                 <div className="flex items-center">
                     <div className="flex-none">
@@ -147,6 +148,7 @@ const NodeSidebar: React.FC = () => {
                 ))}
             </SidebarContent>
         </Sidebar>
+        </div>
     );
 };
 
