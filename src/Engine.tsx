@@ -71,6 +71,11 @@ const Engine: React.FC<EngineProps> = (props) => {
         setContextMenuItems(items);
     };
 
+    const closeContextMenu = () => {
+        setContextMenuOpen(false)
+        setContextMenuItems([])
+    }
+
     return (
         <div>
             {nodes.map((node) => {
@@ -112,6 +117,7 @@ const Engine: React.FC<EngineProps> = (props) => {
                         // ]);
                        console.log("newnode") 
                        createNode(node.type, {x: e.clientX, y: e.clientY})
+                       closeContextMenu(); 
                     },
                 })));
             }}>
