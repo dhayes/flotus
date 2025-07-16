@@ -133,7 +133,7 @@ const NodeSidebar: React.FC = () => {
                         Flotix
                     </div>
                     <div className="flex-grow text-end !p-2 !border-none !text-white !hover:text-white">
-                        <SidebarTrigger className="!text-white hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
+                        <SidebarTrigger className="!text-white !bg-zinc-900 hover:!bg-zinc-700 !border-none" onClick={() => setOpen(v => !v)}>Toggle</SidebarTrigger>
                     </div>
                 </div>
                 <div>
