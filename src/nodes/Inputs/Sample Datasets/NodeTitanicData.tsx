@@ -1,4 +1,4 @@
-import { createNodeComponent } from "../createNodeComponent";
+import { createNodeComponent } from "../../createNodeComponent";
 import * as dfd from "danfojs";
 
 const titanicSample = [{
