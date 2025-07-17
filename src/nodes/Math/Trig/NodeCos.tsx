@@ -1,5 +1,5 @@
 // NodeSin.tsx
-import { createNodeComponent } from "../createNodeComponent";
+import { createNodeComponent } from "../../createNodeComponent";
 
 const NodeSin = createNodeComponent({
   label: "Sine",

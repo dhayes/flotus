@@ -1,5 +1,5 @@
 // NodeTan.tsx
-import { createNodeComponent } from "../createNodeComponent";
+import { createNodeComponent } from "../../createNodeComponent";
 
 const NodeTan = createNodeComponent({
   label: "Tangent",
