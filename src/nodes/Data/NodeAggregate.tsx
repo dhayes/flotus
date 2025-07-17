@@ -23,8 +23,10 @@ const AGG_FUNCS = ["sum", "mean", "count", "min", "max"];
 
 const NodeGroupByAggregate = createNodeComponent({
   label: "GroupBy Aggregate",
+  description: "Group by one or more columns and aggregate by a function",
   width: 260,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "dataframe",
   initialState: {
     groupByCols: [] as string[],
     valueCol: "",

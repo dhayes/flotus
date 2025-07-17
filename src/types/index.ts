@@ -1,16 +1,6 @@
-import { pastelHexColors } from "@/lib/utils";
+// types/index.ts
 
 export type Point = { x: number; y: number; };
-
-// export type Lit = string | number | boolean | undefined | null | void | {};
-// export const tuple = <T extends Lit[]>(...args: T) => args;
-
-// const portTypes = ["number", "string", "dataframe"];
-// type PortTypesTuple = typeof portTypes; // readonly ['hearts', 'diamonds', 'spades', 'clubs']
-
-// export type PortType = PortTypesTuple[number];  // "hearts" | "diamonds" | "spades" | "clubs"
-
-// export const portColors = Object.assign.apply({}, portTypes.map( (v, i) => ( {[v]: pastelHexColors[i]} ) ) )
 
 export const portColors = {
   number: "!bg-[#f3bdbd]",

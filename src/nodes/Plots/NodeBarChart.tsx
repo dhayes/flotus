@@ -29,7 +29,8 @@ const NodeBarChart = createNodeComponent({
   label: "Grouped Bar Chart",
   description: "Bar chart grouped by one or more categorical columns. Aggregates a numeric column by group.",
   width: 300,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "",
   hideOutputPort: true,
   initialState: {
     groupByCols: [] as string[],

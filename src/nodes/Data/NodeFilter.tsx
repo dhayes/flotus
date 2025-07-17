@@ -17,8 +17,10 @@ const OPERATORS = ["==", "!=", "<", ">", "<=", ">="];
 
 const NodeFilter = createNodeComponent({
   label: "Filter Rows",
+  description: "Apply a confitional filter to a column",
   width: 260,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "dataframe",
   initialState: {
     selectedColumn: "",
     operator: "==",
