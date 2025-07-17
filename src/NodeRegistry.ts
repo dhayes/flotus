@@ -10,9 +10,12 @@ type NodeProps = {
   removeDependencyFunction?: any;
   setUpdateInputFunction: (value: any) => void;
   setSelectedInputId: (id: string | null) => void;
+  setSelectedInputType: (id: string | null) => void;
   setSelectedOutputId: (id: string | null) => void;
+  setSelectedOutputType: (id: string | null) => void;
   selectedInputId: string | null;
   selectedOutputId: string | null;
+  selectedOutputType: string | null;
   openContextMenu: any;
   removeNode: any;
   style: any;

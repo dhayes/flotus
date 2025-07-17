@@ -7,7 +7,9 @@ import { createNodeComponent } from '../../createNodeComponent';
 const NodeSinc = createNodeComponent({
     label: 'Sinc',
     initialState: {},
-    initialInputs: 2,
+    initialInputs: ["number", "number"],
+    outputType: undefined,
+    description: "",
 
     computeOutput: (inputs) => {
         const a = inputs[0]?.value ?? 0;

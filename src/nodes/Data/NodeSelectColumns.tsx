@@ -14,8 +14,10 @@ import { createNodeComponent } from "../createNodeComponent";
 
 const NodeSelectColumns = createNodeComponent({
   label: "Select Columns",
+  description: "Select columns to keep or omit from dataset",
   width: 260,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "dataframe",
   initialState: {
     selectedColumns: [] as string[],
   },

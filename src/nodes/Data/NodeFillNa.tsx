@@ -5,8 +5,10 @@ import { createNodeComponent } from "../createNodeComponent";
 
 const NodeFillNA = createNodeComponent({
   label: "Fill NA",
+  description: "fill NA values",
   width: 260,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "dataframe",
   initialState: {
     columns: [] as string[],
     method: "mean",
