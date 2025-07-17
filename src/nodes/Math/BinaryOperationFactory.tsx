@@ -1,3 +1,4 @@
+// BinaryOperationFactory.tsx
 
 import React from 'react';
 import NodeBinaryOperation, { NodeProps } from './BinaryOperation'; // reuse prop type
