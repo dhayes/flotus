@@ -7,7 +7,8 @@ const NodeDropNA = createNodeComponent({
   label: "Drop NA",
     description: "Takes in a dataframe and drops rows containing NA values",
   width: 260,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "dataframe",
   initialState: {
     naValues: "",
   },

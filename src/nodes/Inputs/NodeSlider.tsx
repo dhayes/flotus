@@ -6,8 +6,10 @@ import { createNodeComponent } from "../createNodeComponent";
 const NodeSlider = createNodeComponent({
   label: "Slider",
   width: 200,
-  initialInputs: 0, // no inputs
+  initialInputs: new Array<string>, // no inputs
+  outputType: "number",
   initialState: { value: 5 },
+  description: "A slider that outputs a fractional value from 0 to 10",
 
   computeOutput: (_inputs, state) => state.value,
 

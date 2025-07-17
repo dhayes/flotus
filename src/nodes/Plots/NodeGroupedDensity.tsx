@@ -19,7 +19,8 @@ const NodeGroupedDensity = createNodeComponent({
   label: "Grouped Density",
   description: "A density plot visualizing the distribution of a numeric variable, separated by groups defined in a categorical column.",
   width: 300,
-  initialInputs: 1,
+  initialInputs: ["dataframe"],
+  outputType: "",
   initialState: {
     column: null as string | null,
     groupColumn: null as string | null,

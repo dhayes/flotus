@@ -2,7 +2,6 @@
 
 import './nodeRegistration'; // runs side-effect and registers all nodes
 import React, { useContext, useEffect, useId, useState, type JSX } from 'react';
-import { ConnectionContext } from "@/Connections";
 import ContextMenu, { ContextMenuItem } from './ContextMenu';
 import { getNodeComponent } from './NodeRegistry';
 import { nodeCatalog } from './nodeRegistration';
@@ -14,23 +13,16 @@ const grouped = nodeCatalog.reduce((acc, node) => {
     return acc;
 }, {} as Record<string, typeof nodeCatalog>);
 
-console.log('Node Catalog:', nodeCatalog);
-console.log('Node Catalog:', grouped);
-console.log('Node Catalog:', Object.entries(grouped).map(([category, nodes]) => ({ category, nodes: nodes.map(n => n.label) })));
 
-interface EngineProps {
-    // Define your props here
-}
-
-const Engine: React.FC<EngineProps> = (props) => {
-    const { startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint } =
-        useContext(ConnectionContext)
+const Engine: React.FC = () => {
 
     const [addDependencyFunction, setAddDependencyFunction] = useState<(id: string, f: (value: any) => void) => void>();
     const [removeDependencyFunction, setRemoveDependencyFunction] = useState<((id: string) => void) | undefined>(undefined);
     const [updateInputFunction, setUpdateInputFunction] = useState<(value: any) => void>();
     const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
+    const [selectedInputType, setSelectedInputType] = useState<string | null>(null);
     const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null)
+    const [selectedOutputType, setSelectedOutputType] = useState<string | null>(null)
 
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -39,31 +31,18 @@ const Engine: React.FC<EngineProps> = (props) => {
     useEffect(() => {
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
             console.log(`Connecting output → input: ${selectedOutputId} → ${selectedInputId}`);
-            addDependencyFunction(selectedInputId, updateInputFunction);
+            console.log(selectedInputType, selectedOutputType)
+            if (selectedInputType === selectedOutputType) {
+                addDependencyFunction(selectedInputId, updateInputFunction);
             setSelectedInputId(null);
             setAddDependencyFunction(undefined);
             setRemoveDependencyFunction(undefined);
             setUpdateInputFunction(undefined);
+            }
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
-    //type NodeData = { id: string; type: string; label: string };
-
-
     const { nodes, createNode, removeNode } = useNodeEngine();
-
-    // const [nodes, setNodes] = useState<NodeData[]>([]);
-
-    // const addNode = () => {
-    //     setNodes(prev => [
-    //         ...prev,
-    //         { id: crypto.randomUUID(), type: 'math/add', label: 'test0' },
-    //     ]);
-    // }
-
-    // const removeNode = (id: string) => {
-    //     setNodes(prev => prev.filter(node => node.id !== id));
-    // }
 
     const openContextMenu = (position: { x: number; y: number }, items: Array<ContextMenuItem>) => {
         setContextMenuOpen(true);
@@ -93,9 +72,12 @@ const Engine: React.FC<EngineProps> = (props) => {
                         removeDependencyFunction={removeDependencyFunction}
                         setUpdateInputFunction={setUpdateInputFunction}
                         setSelectedInputId={setSelectedInputId}
+                        setSelectedInputType={setSelectedInputType}
                         setSelectedOutputId={setSelectedOutputId}
+                        setSelectedOutputType={setSelectedOutputType}
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
+                        selectedOutputType={selectedOutputType}
                         openContextMenu={openContextMenu}
                         removeNode={() => removeNode(node.id)}
                         style={{ position: "absolute", left: node.x, top: node.y }}
@@ -105,17 +87,10 @@ const Engine: React.FC<EngineProps> = (props) => {
             <div style={{ width: '100%', height: '100vh', zIndex: 998 }} onContextMenu={(e) => {
                 e.preventDefault();
                 console.log(e)
-                // setContextMenuPosition({ x: e.clientX, y: e.clientY });
-                // setContextMenuOpen(true);
                 e.currentTarget.closest('.node') ? false : openContextMenu({ x: e.clientX, y: e.clientY }, nodeCatalog.map((node) => ({
                     label: node.label,
                     category: node.category,
                     onClick: () => {
-                        // setNodes(prev => [
-                        //     ...prev,
-                        //     { id: crypto.randomUUID(), type: node.type, label: node.label },
-                        // ]);
-                       console.log("newnode") 
                        createNode(node.type, {x: e.clientX, y: e.clientY})
                        closeContextMenu(); 
                     },

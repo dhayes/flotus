@@ -12,7 +12,7 @@ import Draggable from "react-draggable";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ConnectionContext } from "@/Connections";
 import { StageContext } from "@/Stage";
-import type { Point } from "@/types";
+import { portColors, type Point } from "@/types";
 import { Info, Trash2 } from "lucide-react";
 import {
   Tooltip,
@@ -25,17 +25,16 @@ interface InputPortConfig {
   id: string;
   value: any;
   connected: string | null;
+  type: string;
   removeDependencyFunction?: (id: string) => void;
   addDependencyFunction?: (id: string, f: (value: any) => void) => void;
 }
-
-
-
 
 interface OutputPort {
   id: string;
   value: any;
   connected: string | null;
+  type: string;
 }
 
 interface NodeFactoryProps<State> {
@@ -43,7 +42,8 @@ interface NodeFactoryProps<State> {
   description: string;
   width?: number;
   initialState: State;
-  initialInputs: number;
+  initialInputs: string[];
+  outputType: string;
   computeOutput: (inputs: InputPortConfig[], state: State) => any;
   renderControls: (props: {
     state: State;
@@ -71,7 +71,10 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
     removeDependencyFunction,
     setUpdateInputFunction,
     setSelectedInputId,
+    setSelectedInputType,
     setSelectedOutputId,
+    setSelectedOutputType,
+    selectedOutputType,
     selectedInputId,
     selectedOutputId,
     openContextMenu,
@@ -85,18 +88,19 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
     const nodeRef = useRef<HTMLDivElement>(null);
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    const makeInput = (): InputPortConfig => ({
+    const makeInput = (type: string): InputPortConfig => ({
       id: useId(),
       value: null,
       connected: null,
+      type: type
     });
 
     const [inputs, setInputs] = useState<InputPortConfig[]>(
-      Array.from({ length: config.initialInputs }, makeInput)
+      config.initialInputs.map(type => makeInput(type))
     );
 
     const outputId = useId();
-    const [output, setOutput] = useState<OutputPort>({ id: outputId, value: null, connected: null });
+    const [output, setOutput] = useState<OutputPort>({ id: outputId, value: null, connected: null, type: config.outputType });
     const [dependencies, setDependencies] = useState<Record<string, (v: any) => void>>({});
     const [state, setState] = useState<State>(config.initialState);
 
@@ -223,20 +227,27 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                         }}
                       >
                         <button
-                          className={`!mx-0 !px-1 !w-4 !aspect-square !rounded-full ${input.connected ? "!bg-gray-400" : "!bg-gray-600"
+                          className={`!mx-0 !px-1 !w-4 !aspect-square !rounded-full ${input.connected ? portColors[input.type] : portColors[input.type]
                             } !p-0 !border-0 !cursor-pointer`}
                           onMouseUp={() => {
+                            if (selectedOutputType == input.type) {
                             !input.connected && setSelectedInputId(input.id);
+                            !input.connected && setSelectedInputType(input.type);
                             !input.connected && setUpdateInputFunction(updateFn);
                             !input.connected && finishConnection(input.id);
                             !input.connected && updateInput(index, { connected: selectedOutputId });
                             if (addDependencyFunction && removeDependencyFunction && (!input.connected)) {
                               updateInput(index, { addDependencyFunction, removeDependencyFunction });
                             }
+                            }
+                        
                           }}
                           onMouseDown={() => {
                             setSelectedOutputId(input.connected);
+                            setSelectedOutputType(input.type)
+                            setSelectedInputType(input.connected ?? input.type)
                             setSelectedInputId(input.id);
+                            setSelectedInputType(input.type);
                             if (input.removeDependencyFunction && input.addDependencyFunction) {
                               input.removeDependencyFunction(input.id);
                               input.connected && setRemoveDependencyFunction(() => input.removeDependencyFunction);
@@ -272,11 +283,12 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                         }}
                       >
                         <button
-                          className={`!ml-1 !px-2 !w-4 !aspect-square !rounded-full ${Object.entries(dependencies).length > 0 ? "!bg-gray-400" : "!bg-gray-600"
-                            } !p-0 !border-0 cursor-pointer`}
+                          className={`!ml-1 !px-2 !w-4 !aspect-square !rounded-full ${Object.entries(dependencies).length > 0 ? portColors[output.type] : portColors[output.type]
+                          } !p-0 !border-0 cursor-pointer`}
                           onMouseDown={() => {
                             startConnection(output.id);
                             setSelectedOutputId(output.id);
+                            setSelectedOutputType(output.type);
                             setAddDependencyFunction(() => addDependency);
                             setRemoveDependencyFunction(() => removeDependency);
                           }}
