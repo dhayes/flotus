@@ -201,19 +201,44 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
             <CardHeader className="text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
               <div className="flex justify-between items-center">
                 <span>{label}</span>
-                <Tooltip>
-                  <TooltipTrigger asChild className="rounded-full">
-                    <button className="hover:text-gray-300 !rounded-full !p-0 my-0 border-0 !bg-[#53585a]">
-                      <Info className="w-4 h-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-black text-white p-2 mr-1 text-xs rounded">
-                    {config.description}
-                    <TooltipArrow className="pb-1" style={{ height: 15, width: 14 }} />
-                  </TooltipContent>
-                </Tooltip>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild className="rounded-full">
+                      <button
+                        className="hover:text-gray-300 !rounded-full !p-0 border-0 !bg-[#53585a]"
+                        onClick={() => {
+                          inputs.forEach(input => {
+                            if (input.removeDependencyFunction) {
+                              input.removeDependencyFunction(input.id);
+                            }
+                          });
+                          removeNode(id);
+                          deleteConnectons(Object.entries(portRefs.current).map(([id]) => id));
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs bg-black text-white p-2 mr-1 text-xs rounded">
+                      Delete Node
+                      <TooltipArrow className="pb-1" style={{ height: 15, width: 14 }} />
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild className="rounded-full">
+                      <button className="hover:text-gray-300 !rounded-full !p-0 my-0 border-0 !bg-[#53585a]">
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs bg-black text-white p-2 mr-1 text-xs rounded">
+                      {config.description}
+                      <TooltipArrow className="pb-1" style={{ height: 15, width: 14 }} />
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </CardHeader>
+
             <CardContent className="pt-3 pb-4 px-0 bg-[#696f72]">
               <div className="flex flex-col gap-4 px-4">
                 {inputs.map((input, index) => {
@@ -231,16 +256,16 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                             } !p-0 !border-0 !cursor-pointer`}
                           onMouseUp={() => {
                             if (selectedOutputType == input.type) {
-                            !input.connected && setSelectedInputId(input.id);
-                            !input.connected && setSelectedInputType(input.type);
-                            !input.connected && setUpdateInputFunction(updateFn);
-                            !input.connected && finishConnection(input.id);
-                            !input.connected && updateInput(index, { connected: selectedOutputId });
-                            if (addDependencyFunction && removeDependencyFunction && (!input.connected)) {
-                              updateInput(index, { addDependencyFunction, removeDependencyFunction });
+                              !input.connected && setSelectedInputId(input.id);
+                              !input.connected && setSelectedInputType(input.type);
+                              !input.connected && setUpdateInputFunction(updateFn);
+                              !input.connected && finishConnection(input.id);
+                              !input.connected && updateInput(index, { connected: selectedOutputId });
+                              if (addDependencyFunction && removeDependencyFunction && (!input.connected)) {
+                                updateInput(index, { addDependencyFunction, removeDependencyFunction });
+                              }
                             }
-                            }
-                        
+
                           }}
                           onMouseDown={() => {
                             setSelectedOutputId(input.connected);
@@ -284,7 +309,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
                       >
                         <button
                           className={`!ml-1 !px-2 !w-4 !aspect-square !rounded-full ${Object.entries(dependencies).length > 0 ? portColors[output.type] : portColors[output.type]
-                          } !p-0 !border-0 cursor-pointer`}
+                            } !p-0 !border-0 cursor-pointer`}
                           onMouseDown={() => {
                             startConnection(output.id);
                             setSelectedOutputId(output.id);
