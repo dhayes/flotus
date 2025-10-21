@@ -6,36 +6,56 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateSshapedPath(
-  x1: number, y1: number,
-  x2: number, y2: number,
-  curvature = 0.2
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  tension = 0.5 // 0 = tight, 1 = very loose
 ): string {
-  const dx = x2 - x1,
-        dy = y2 - y1;
+  // Vector from start to end
+  const dx = x2 - x1;
+  const dy = y2 - y1;
   const dist = Math.hypot(dx, dy);
-  if (dist === 0) return `M ${x1},${y1} L ${x2},${y2}`;
+  // if (dist < 1e-3) return `M ${x1},${y1} L ${x2},${y2}`;
 
-  // Unit-perpendicular vector
-  const ux = -dy / dist,
-        uy =  dx / dist;
+  // --- direction & orientation ---
+  const horizontalBias = Math.abs(dx) / (Math.abs(dx) + Math.abs(dy)); // 1 = mostly horizontal
+  const verticalBias = 1 - horizontalBias;
 
-  // Flip direction if endpoint is below start
-  const direction = y2 > y1 ? -1 : 1;
-  const offset = curvature * dist * direction;
+  // --- curvature scaling ---
+  // dynamic curvature: tighter for short lines, smoother for long lines
+  const baseCurve = Math.min(0.4 + 0.3 * tension, 0.7);
+  const curveStrength = baseCurve * dist * (0.5 + 0.5 * horizontalBias);
 
-  // Control pt 1 at 25%, offset one way
-  const cp1x = x1 + dx * 0.25 + ux * offset;
-  const cp1y = y1 + dy * 0.25 + uy * offset;
+  // --- angle factor ---
+  const angle = Math.atan2(dy, dx);
+  const angleSin = Math.sin(angle);
+  const angleCos = Math.cos(angle);
 
-  // Control pt 2 at 75%, offset the opposite way
-  const cp2x = x1 + dx * 0.75 - ux * offset;
-  const cp2y = y1 + dy * 0.75 - uy * offset;
+  // Control point directions:
+  // C1 pulls forward from start, slightly perpendicular to avoid overlaps
+  const c1x = x1 + curveStrength * angleCos - verticalBias * dist * 0.1 * angleSin;
+  const c1y = y1 + curveStrength * angleSin + verticalBias * dist * 0.1 * angleCos;
 
+  // C2 pulls backward from end, mirrored curvature
+  const c2x = x2 - curveStrength * angleCos + verticalBias * dist * 0.1 * angleSin;
+  const c2y = y2 - curveStrength * angleSin - verticalBias * dist * 0.1 * angleCos;
+
+  // --- optional near-vertical compensation ---
+  // if nodes are stacked vertically, bend less
+  const verticalFactor = Math.abs(dy) / Math.max(1, dist);
+  // if (verticalFactor > 0.85) {
+     const midx = (x1 + x2) / 2;
+    return `M ${x1},${y1} C ${midx},${y1} ${midx},${y2} ${x2},${y2}`;
+  // }
+
+  // --- final cubic Bézier path ---
   return `M ${x1},${y1}
-          C ${cp1x},${cp1y}
-            ${cp2x},${cp2y}
+          C ${c1x},${c1y}
+            ${c2x},${c2y}
             ${x2},${y2}`;
 }
+
 
 export function transformPoint(
   x: number,
