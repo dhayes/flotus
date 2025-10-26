@@ -43,17 +43,8 @@ export function generateSshapedPath(
 
   // --- optional near-vertical compensation ---
   // if nodes are stacked vertically, bend less
-  const verticalFactor = Math.abs(dy) / Math.max(1, dist);
-  // if (verticalFactor > 0.85) {
      const midx = (x1 + x2) / 2;
     return `M ${x1},${y1} C ${midx},${y1} ${midx},${y2} ${x2},${y2}`;
-  // }
-
-  // --- final cubic Bézier path ---
-  return `M ${x1},${y1}
-          C ${c1x},${c1y}
-            ${c2x},${c2y}
-            ${x2},${y2}`;
 }
 
 
