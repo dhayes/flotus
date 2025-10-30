@@ -10,14 +10,22 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState } from "react";
+import { useIsMobile } from "./hooks/useIsMobile";
+import MobileNotSupported from "./MobileNotSupported";
 
 function App() {
+  const isMobile = useIsMobile(); // or use a custom threshold
   const [offset, setOffset] = useState<{ x: number; y: number; scale: number }>({
     x: 0,
     y: 0,
     scale: 1,
   });
 
+  if (isMobile) {
+    return (
+      <MobileNotSupported />
+    );
+  }
   return (
     <NodeEngineProvider>
       <SidebarProvider>
