@@ -11,6 +11,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState } from "react";
 import { useMobile } from "./hooks/use-mobile";
+import MobileNotSupported from "./MobileNotSupported";
 
 function App() {
   const isMobile = useMobile(); // or use a custom threshold
@@ -22,14 +23,7 @@ function App() {
 
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold">Mobile not yet supported</h1>
-          <p className="mt-2 text-sm opacity-70">
-            Please open on a desktop or larger screen.
-          </p>
-        </div>
-      </div>
+      <MobileNotSupported />
     );
   }
   return (
