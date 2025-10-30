@@ -1717,6 +1717,11 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
+bmpm-phonetics@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/bmpm-phonetics/-/bmpm-phonetics-0.4.0.tgz#f0c1a1a45c4a88525a05e6bf675b4bf790182d51"
+  integrity sha512-SskW6L7GWtk7EOMJMcidYxUlKdCgOgqJ2o9VXfZyOgAEQzERIj4lFaiD3Ct23NSESPKEHCQXPM0BEJQ6TbI2dA==
+
 brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"
