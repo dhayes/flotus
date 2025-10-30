@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const UA_REGEX = /Mobi|Android|iPhone|iPad|iPod|IEMobile|BlackBerry/i;
 
-export function useMobile(breakpointPx: number = 820) {
+export function useIsMobile(breakpointPx: number = 820) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {

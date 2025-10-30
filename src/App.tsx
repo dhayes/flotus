@@ -10,11 +10,11 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState } from "react";
-import { useMobile } from "./hooks/useIsMobile";
+import { useIsMobile } from "./hooks/useIsMobile";
 import MobileNotSupported from "./MobileNotSupported";
 
 function App() {
-  const isMobile = useMobile(); // or use a custom threshold
+  const isMobile = useIsMobile(); // or use a custom threshold
   const [offset, setOffset] = useState<{ x: number; y: number; scale: number }>({
     x: 0,
     y: 0,
