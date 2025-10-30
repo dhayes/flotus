@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["DOM", "ESNext"],
+    "lib": ["DOM", "ES2020", "WebWorker"],
     "jsx": "react-jsx",
     "moduleResolution": "bundler",              // ← CHANGED from "Node"
     "esModuleInterop": true,
