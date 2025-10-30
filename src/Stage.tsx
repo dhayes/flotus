@@ -121,7 +121,7 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
             <div ref={(el) => {
                 ref.current = el;
                 dropRef(el); // attach drop target
-            }} style={{ width: '100vw', height: '100%', overflow: 'hidden' }} onWheel={handleWheel} className='grid-background'>
+            }} style={{ width: '10000vw', height:'10000%', overflow: 'none' }} onWheel={handleWheel} className='grid-background'>
                 <div
                     ref={ref}
                     style={{
