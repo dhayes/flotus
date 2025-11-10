@@ -20,7 +20,7 @@ type ConditionOp = "==" | "!=" | "<" | ">" | "<=" | ">=";
 interface JoinPair {
   leftCol: string | null;
   rightCol: string | null;
-  operator: ConditionOp;
+  operator: ConditionOp; // == used for key join; others applied post-merge as filters
 }
 
 interface State {
@@ -29,35 +29,36 @@ interface State {
   warning: string | null;
 }
 
-function inferType(series: any): string {
-  if (!series?.values) return "unknown";
-  const v = series.values.find((x: any) => x !== null && x !== undefined);
-  if (v == null) return "unknown";
-  if (typeof v === "number") return "number";
-  if (typeof v === "string") return "string";
-  if (typeof v === "boolean") return "boolean";
-  if (v instanceof Date) return "date";
-  return typeof v;
+/** Infer a primitive-ish type from a Danfo Series */
+function inferSeriesType(series: any): "number" | "string" | "boolean" | "date" | "object" | "unknown" {
+  if (!series || !series.values) return "unknown";
+  const first = series.values.find((v: any) => v !== null && v !== undefined);
+  if (first === undefined) return "unknown";
+  if (typeof first === "number") return "number";
+  if (typeof first === "string") return "string";
+  if (typeof first === "boolean") return "boolean";
+  if (first instanceof Date) return "date";
+  if (typeof first === "object") return "object";
+  return "unknown";
 }
 
+/** Evaluate binary comparison with JS semantics */
 function compare(lhs: any, rhs: any, op: ConditionOp): boolean {
   switch (op) {
-    case "==": return lhs == rhs;
-    case "!=": return lhs != rhs;
-    case "<":  return lhs < rhs;
-    case ">":  return lhs > rhs;
-    case "<=": return lhs <= rhs;
-    case ">=": return lhs >= rhs;
+    case "==":  return lhs == rhs;  // equality joins handled earlier; here for completeness
+    case "!=":  return lhs != rhs;
+    case "<":   return lhs < rhs;
+    case ">":   return lhs > rhs;
+    case "<=":  return lhs <= rhs;
+    case ">=":  return lhs >= rhs;
   }
 }
-
-const MAX_CROSS_SIZE = 2e5; // protect from blowing up (200k row limit)
 
 const NodeJoin = createNodeComponent<State>({
   label: "Join DataFrames",
   description:
-    "Join two DataFrames (INNER/LEFT/RIGHT/OUTER). Supports equality and non-equality conditions. Falls back to cross-then-filter for true non-equi joins.",
-  width: 480,
+    "Join two DataFrames (INNER/LEFT/RIGHT/OUTER) on one or more column pairs. Non-equality conditions are applied after the join.",
+  width: 460,
   initialInputs: ["dataframe", "dataframe"],
   outputType: "dataframe",
   initialState: {
@@ -71,103 +72,91 @@ const NodeJoin = createNodeComponent<State>({
     const right = inputs[1]?.value as dfd.DataFrame | null;
     if (!left || !right) return null;
 
-    const pairs = state.joinPairs.filter(p => p.leftCol && p.rightCol) as JoinPair[];
-    if (pairs.length === 0) return null;
+    // Separate equality keys and post-join filters
+    const eqPairs = state.joinPairs.filter(
+      (p) => p.leftCol && p.rightCol && p.operator === "=="
+    ) as { leftCol: string; rightCol: string; operator: ConditionOp }[];
 
-    const eqPairs = pairs.filter(p => p.operator === "==");
-    const nonEqPairs = pairs.filter(p => p.operator !== "==");
+    const filterPairs = state.joinPairs.filter(
+      (p) => p.leftCol && p.rightCol && p.operator !== "=="
+    ) as { leftCol: string; rightCol: string; operator: ConditionOp }[];
 
-    // Detect type mismatches
-    for (const p of pairs) {
-      try {
-        const lt = inferType(left.column(p.leftCol));
-        const rt = inferType(right.column(p.rightCol));
-        if (lt !== "unknown" && rt !== "unknown" && lt !== rt) {
-          console.warn(`Type mismatch: ${p.leftCol} (${lt}) vs ${p.rightCol} (${rt})`);
-          return left;
+    // Type check (based on first non-null value) for each configured pair
+    for (const p of state.joinPairs) {
+      if (p.leftCol && p.rightCol) {
+        try {
+          const lt = inferSeriesType(left.column(p.leftCol));
+          const rt = inferSeriesType(right.column(p.rightCol));
+          if (lt !== "unknown" && rt !== "unknown" && lt !== rt) {
+            // Return left unchanged to avoid throwing; UI will show warning.
+            return left;
+          }
+        } catch {
+          // fall through; if column missing, let merge throw below
         }
-      } catch {}
+      }
     }
 
-    /** -----------------------------------------------------------
-     *  1. Regular equality join (with post filters for non-equal)
-     * ----------------------------------------------------------- */
-    if (eqPairs.length > 0) {
-      const leftOn = eqPairs.map(p => p.leftCol!);
-      const rightOn = eqPairs.map(p => p.rightCol!);
-
-      let joined: dfd.DataFrame;
-      try {
-        joined = dfd.merge({
-          left,
-          right,
-          on: leftOn,
-          how: state.joinType,
-        });
-      } catch (err) {
-        console.error("Join failed:", err);
-        return null;
-      }
-
-      if (nonEqPairs.length === 0) return joined;
-
-      // Apply non-equality filters post-join
-      let jsonRows = joined.toJSON();
-      if (!Array.isArray(jsonRows)) {
-        jsonRows = Object.values(jsonRows);
-      }
-      const mask = (jsonRows as any[]).map((row: any) =>
-        nonEqPairs.every(p => {
-          const l = row[p.leftCol as string];
-          const rName = Object.prototype.hasOwnProperty.call(row, `${p.rightCol}_r`) ? `${p.rightCol}_r` : p.rightCol!;
-          return compare(l, row[rName], p.operator);
-        })
-      );
-      return joined.loc({ rows: mask });
-    }
-
-    /** -----------------------------------------------------------
-     *  2. Pure non-equality join  (Cross + Filter)
-     * ----------------------------------------------------------- */
-    const leftRows = left.shape[0];
-    const rightRows = right.shape[0];
-    const estSize = leftRows * rightRows;
-    if (estSize > MAX_CROSS_SIZE) {
-      console.warn(
-        `⚠️ Non-equi join too large (${estSize.toLocaleString()} rows). Skipping.`
-      );
+    // Must have at least one equality key to perform the join.
+    // (Non-equi joins would require CROSS + filter, which we avoid here.)
+    if (eqPairs.length === 0) {
       return null;
     }
 
-    const chunkSize = Math.max(1, Math.floor(MAX_CROSS_SIZE / rightRows));
-    const chunks: dfd.DataFrame[] = [];
+    // Danfo only supports joining on columns with the same name.
+    // So we must ensure leftCol and rightCol are the same for each pair.
+    // We'll warn and skip the join if not.
+    const on = eqPairs
+      .filter((p) => p.leftCol === p.rightCol)
+      .map((p) => p.leftCol as string);
 
-    for (let start = 0; start < leftRows; start += chunkSize) {
-      const end = Math.min(start + chunkSize, leftRows);
-      const leftChunk = left.loc({ rows: Array.from({ length: end - start }, (_, i) => start + i) });
-      // Manual cross join implementation
-      const leftChunkRows = dfd.toJSON(leftChunk);
-      const rightRowsData = dfd.toJSON(right);
-      const crossRows: any[] = [];
-      for (const lRow of leftChunkRows as any[]) {
-        for (const rRow of rightRowsData as any[]) {
-          crossRows.push({ ...lRow, ...Object.fromEntries(Object.entries(rRow).map(([k, v]) => [`${k}_r`, v])) });
-        }
-      }
-      const mask = crossRows.map((row: any) =>
-        nonEqPairs.every(p => {
-          const l = row[p.leftCol as string];
-          const rName = Object.prototype.hasOwnProperty.call(row, `${p.rightCol}_r`) ? `${p.rightCol}_r` : p.rightCol!;
-          return compare(l, row[rName], p.operator);
-        })
-      );
-      const filteredRows = crossRows.filter((_, idx) => mask[idx]);
-      if (filteredRows.length > 0) {
-        chunks.push(new dfd.DataFrame(filteredRows));
+    if (on.length !== eqPairs.length) {
+      // If any join pair has different column names, show warning and skip join.
+      return left;
+    }
+
+    let joined: dfd.DataFrame;
+    try {
+      // Use explicit suffixes to keep right-side duplicates visible
+      joined = dfd.merge({
+        left,
+        right,
+        on,
+        how: state.joinType,
+      });
+    } catch (err) {
+      console.error("Join failed:", err);
+      return null;
+    }
+
+    // Apply non-equality conditions as post-join filters
+    if (filterPairs.length > 0) {
+      try {
+        const colIndex: Record<string, number> = {};
+        joined.columns.forEach((col, idx) => {
+          colIndex[col] = idx;
+        });
+        const mask = Array.from({ length: joined.shape[0] }, (_, i) => {
+          const row = joined.row(i);
+          return filterPairs.every((p) => {
+            const leftName = p.leftCol!;
+            const rightName =
+              colIndex.hasOwnProperty(`${p.rightCol}_r`)
+                ? `${p.rightCol}_r`
+                : p.rightCol!;
+            const lVal = row[colIndex[leftName]];
+            const rVal = row[colIndex[rightName]];
+            return compare(lVal, rVal, p.operator);
+          });
+        });
+        joined = joined.loc({ rows: mask });
+      } catch (err) {
+        console.error("Post-join filter failed:", err);
+        // keep the joined result without filters rather than failing
       }
     }
 
-    return dfd.concat({ dfList: chunks, axis: 0 });
+    return joined;
   },
 
   renderInputControls: () => null,
@@ -178,40 +167,77 @@ const NodeJoin = createNodeComponent<State>({
     const leftCols = useMemo(() => (left ? left.columns : []), [left]);
     const rightCols = useMemo(() => (right ? right.columns : []), [right]);
 
+    // Keep an up-to-date warning message in UI (type mismatch or non-equi without keys)
     useEffect(() => {
-      if (!left || !right) return;
+      if (!left || !right) {
+        setState((s) => ({ ...s, warning: null }));
+        return;
+      }
+
+      // Warn on type mismatch
       for (const p of state.joinPairs) {
         if (p.leftCol && p.rightCol) {
-          const lt = inferType(left.column(p.leftCol));
-          const rt = inferType(right.column(p.rightCol));
-          if (lt !== "unknown" && rt !== "unknown" && lt !== rt) {
-            setState(s => ({
-              ...s,
-              warning: `⚠️ Type mismatch: "${p.leftCol}" (${lt}) vs "${p.rightCol}" (${rt})`,
-            }));
-            return;
+          try {
+            const lt = inferSeriesType(left.column(p.leftCol));
+            const rt = inferSeriesType(right.column(p.rightCol));
+            if (lt !== "unknown" && rt !== "unknown" && lt !== rt) {
+              setState((s) => ({
+                ...s,
+                warning: `Column type mismatch: "${p.leftCol}" (${lt}) vs "${p.rightCol}" (${rt})`,
+              }));
+              return;
+            }
+          } catch {
+            // ignore here; compute will handle
           }
         }
       }
-      setState(s => ({ ...s, warning: null }));
-    }, [left, right, state.joinPairs]);
 
-    const updatePair = (i: number, field: keyof JoinPair, v: any) =>
-      setState(s => ({
+      // Warn if trying to use non-equality without any equality keys
+      const hasEq = state.joinPairs.some(
+        (p) => p.leftCol && p.rightCol && p.operator === "=="
+      );
+      const hasNonEq = state.joinPairs.some(
+        (p) => p.leftCol && p.rightCol && p.operator !== "=="
+      );
+      if (hasNonEq && !hasEq) {
+        setState((s) => ({
+          ...s,
+          warning:
+            "Non-equality conditions require at least one equality key; add an '==' pair first.",
+        }));
+        return;
+      }
+
+      setState((s) => ({ ...s, warning: null }));
+    }, [left, right, state.joinPairs, setState]);
+
+    const updatePair = (
+      index: number,
+      field: keyof JoinPair,
+      value: string | ConditionOp
+    ) => {
+      setState((s) => ({
         ...s,
-        joinPairs: s.joinPairs.map((p, j) => (i === j ? { ...p, [field]: v } : p)),
+        joinPairs: s.joinPairs.map((p, i) =>
+          i === index ? { ...p, [field]: value } : p
+        ),
       }));
+    };
 
     const addPair = () =>
-      setState(s => ({
+      setState((s) => ({
         ...s,
-        joinPairs: [...s.joinPairs, { leftCol: null, rightCol: null, operator: "==" }],
+        joinPairs: [
+          ...s.joinPairs,
+          { leftCol: null, rightCol: null, operator: "==" },
+        ],
       }));
 
-    const removePair = (i: number) =>
-      setState(s => ({
+    const removePair = (index: number) =>
+      setState((s) => ({
         ...s,
-        joinPairs: s.joinPairs.filter((_, j) => j !== i),
+        joinPairs: s.joinPairs.filter((_, i) => i !== index),
       }));
 
     return (
@@ -219,7 +245,9 @@ const NodeJoin = createNodeComponent<State>({
         {/* Join Type */}
         <Select
           value={state.joinType}
-          onValueChange={v => setState(s => ({ ...s, joinType: v as JoinType }))}
+          onValueChange={(value) =>
+            setState((s) => ({ ...s, joinType: value as JoinType }))
+          }
         >
           <SelectTrigger className="w-[200px] bg-white text-black text-sm">
             <SelectValue placeholder="Join Type" />
@@ -237,18 +265,19 @@ const NodeJoin = createNodeComponent<State>({
 
         {/* Join Conditions */}
         <div className="flex flex-col gap-2">
-          {state.joinPairs.map((p, i) => (
-            <div key={i} className="flex items-center gap-2">
+          {state.joinPairs.map((pair, idx) => (
+            <div key={idx} className="flex items-center gap-2">
               {/* Left column */}
               <Select
-                value={p.leftCol ?? ""}
-                onValueChange={v => updatePair(i, "leftCol", v)}
+                value={pair.leftCol ?? ""}
+                onValueChange={(v) => updatePair(idx, "leftCol", v)}
               >
                 <SelectTrigger className="bg-white text-black text-xs w-[150px]">
-                  <SelectValue placeholder="Left col" />
+                  <SelectValue placeholder="Left column" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
+                    <SelectLabel>Left Columns</SelectLabel>
                     {leftCols.map((c: string) => (
                       <SelectItem key={c} value={c}>
                         {c}
@@ -260,15 +289,18 @@ const NodeJoin = createNodeComponent<State>({
 
               {/* Operator */}
               <Select
-                value={p.operator}
-                onValueChange={v => updatePair(i, "operator", v as ConditionOp)}
+                value={pair.operator}
+                onValueChange={(v) =>
+                  updatePair(idx, "operator", v as ConditionOp)
+                }
               >
-                <SelectTrigger className="bg-white text-black text-xs w-[60px]">
+                <SelectTrigger className="bg-white text-black text-xs w-[70px]">
                   <SelectValue placeholder="Op" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {["==", "!=", "<", ">", "<=", ">="].map(op => (
+                    <SelectLabel>Operator</SelectLabel>
+                    {["==", "!=", "<", ">", "<=", ">="].map((op) => (
                       <SelectItem key={op} value={op}>
                         {op}
                       </SelectItem>
@@ -279,14 +311,15 @@ const NodeJoin = createNodeComponent<State>({
 
               {/* Right column */}
               <Select
-                value={p.rightCol ?? ""}
-                onValueChange={v => updatePair(i, "rightCol", v)}
+                value={pair.rightCol ?? ""}
+                onValueChange={(v) => updatePair(idx, "rightCol", v)}
               >
-                <SelectTrigger className="bg-white text-black text-xs w-[150px]">
-                  <SelectValue placeholder="Right col" />
+                <SelectTrigger className="bg-white text-black text-xs w=[150px] w-[150px]">
+                  <SelectValue placeholder="Right column" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
+                    <SelectLabel>Right Columns</SelectLabel>
                     {rightCols.map((c: string) => (
                       <SelectItem key={c} value={c}>
                         {c}
@@ -296,10 +329,11 @@ const NodeJoin = createNodeComponent<State>({
                 </SelectContent>
               </Select>
 
+              {/* Remove condition (icon button) */}
               {state.joinPairs.length > 1 && (
                 <button
-                  onClick={() => removePair(i)}
-                  className="flex items-center justify-center w-5 h-5 rounded-full bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => removePair(idx)}
+                  className="flex items-center justify-center w-5 h-5 rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors"
                   title="Remove condition"
                 >
                   <X className="w-3 h-3" />
@@ -308,11 +342,17 @@ const NodeJoin = createNodeComponent<State>({
             </div>
           ))}
 
-          <Button variant="secondary" size="sm" onClick={addPair} className="text-xs w-fit">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={addPair}
+            className="text-xs w-fit"
+          >
             + Add Condition
           </Button>
         </div>
 
+        {/* Warnings */}
         {state.warning && (
           <div className="text-yellow-400 text-xs mt-1">{state.warning}</div>
         )}
