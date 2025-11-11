@@ -112,3 +112,40 @@ export const pastelHexColors: string[] = generatePastelHSL(100).map((hsl) => {
   return hslToHex(h, s, l);
 });
 
+import * as dfd from "danfojs";
+
+/**
+ * Creates a deep, isolated copy of a DataFrame.
+ * Uses df.copy({ deep: true }) when available (preserves dtypes and metadata).
+ * Falls back to JSON serialization if deep copy fails for any reason.
+ */
+export function safeCopy(df: dfd.DataFrame | null): dfd.DataFrame | null {
+  if (!df) return null;
+
+  try {
+    // Preferred method (Danfo.js ≥1.2.0)
+    return new dfd.DataFrame(dfd.toJSON(df));
+  } catch (err) {
+    console.warn("safeCopy(): deep copy failed, falling back to JSON clone:", err);
+    try {
+      return new dfd.DataFrame(df.toJSON());
+    } catch {
+      // Final fallback: shallow copy to at least avoid shared reference
+      return df.copy();
+    }
+  }
+}
+
+/**
+ * Returns a new DataFrame with one column replaced safely.
+ * Guarantees that upstream DataFrames remain unmodified.
+ */
+export function withReplacedColumn(
+  df: dfd.DataFrame,
+  colName: string,
+  newValues: any[]
+): dfd.DataFrame {
+  const copy = safeCopy(df);
+  if (!copy) throw new Error("Invalid DataFrame in withReplacedColumn");
+  return copy.addColumn(colName, newValues, { inplace: false });
+}

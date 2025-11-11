@@ -165,7 +165,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
         nodeRef={nodeRef}
         onDrag={updatePortPositions}
         onStop={updatePortPositions}
-        cancel="button,input,select,.plotly"
+        cancel="button,input,select,.plotly,.nodrag"
       >
         <div ref={nodeRef} style={style} onContextMenu={(e: any) => {
           e.preventDefault();

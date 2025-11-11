@@ -17,15 +17,19 @@ const NodeUploadCSV = createNodeComponent({
     isDragging: false,
   },
 
-  computeOutput: (_, state) => state.df,
+  computeOutput: (_, state) => {
+    const newDF = state.df?.copy();
+    return newDF;
+  },
 
   renderControls: ({ state, setState }) => {
     const dropRef = useRef<HTMLDivElement>(null);
 
     const processDataFrame = (df: dfd.DataFrame): dfd.DataFrame => {
       const missing = ["NA", "N/A", "null", "?", ""];
-      missing.forEach((val) => df.replace(val, NaN, { inplace: true }));
-      return df;
+      const newDf = df.copy();
+      missing.forEach((val) => newDf.replace(val, NaN, { inplace: true }));
+      return newDf;
     };
 
     const handleFile = async (file: File) => {
