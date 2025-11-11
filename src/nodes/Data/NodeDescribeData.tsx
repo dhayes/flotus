@@ -42,13 +42,15 @@ const NodeDescribeData = createNodeComponent({
   renderInputControls: () => null,
 
   renderControls: ({ inputs, state, setState }) => {
-    const df = inputs[0]?.value as dfd.DataFrame | null;
+    const oldDf = inputs[0]?.value as dfd.DataFrame | null;
 
     useEffect(() => {
-      if (!df || !df.columns) return;
+      if (!oldDf || !oldDf.columns || typeof oldDf.shape === "undefined") return;
+      
+      const df = new dfd.DataFrame(dfd.toJSON(oldDf)); // deep copy
 
-      const rows: SummaryRow[] = df.columns.map((col: string) => {
-        const series = df[col];
+      const rows: SummaryRow[] = inputs[0]?.value?.$columns.map((col: string) => {
+        const series = df.column(col);
         const dtype = series?.dtype ?? typeof series?.values?.[0];
 
         // Basic type inference beyond dtype
@@ -90,7 +92,7 @@ const NodeDescribeData = createNodeComponent({
 
       const summaryDf = new dfd.DataFrame(rows);
       setState({ summaryDf, summaryRows: rows });
-    }, [df]);
+    }, [inputs[0]?.value]);
 
     return (
       <div className="text-xs text-gray-200 bg-[#696f72] rounded p-2 overflow-auto max-h-[280px]">
