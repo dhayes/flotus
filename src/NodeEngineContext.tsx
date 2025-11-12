@@ -10,16 +10,26 @@ type NodeInstance = {
   y: number;
 };
 
+type SelectedNode = {
+  id: string;
+  label: string;
+  outputType: string;
+  outputValue: any;
+};
+
 interface NodeEngineContextType {
   nodes: NodeInstance[];
   createNode: (type: string, pos: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
+  selectedNode: SelectedNode | null;
+  setSelectedNode: (node: any) => void;
 }
 
 const NodeEngineContext = createContext<NodeEngineContextType | null>(null);
 
 export const NodeEngineProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [nodes, setNodes] = useState<NodeInstance[]>([]);
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(null);
 
   const createNode = (type: string, pos: { x: number; y: number }) => {
     const Component = getNodeComponent(type);
@@ -42,7 +52,7 @@ export const NodeEngineProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   return (
-    <NodeEngineContext.Provider value={{ nodes, createNode, removeNode }}>
+    <NodeEngineContext.Provider value={{ nodes, createNode, removeNode, selectedNode, setSelectedNode }}>
       {children}
     </NodeEngineContext.Provider>
   );
