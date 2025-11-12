@@ -42,7 +42,7 @@ const Engine: React.FC = () => {
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
 
-    const { nodes, createNode, removeNode } = useNodeEngine();
+    const { nodes, createNode, removeNode, selectedNode, setSelectedNode } = useNodeEngine();
 
     const openContextMenu = (position: { x: number; y: number }, items: Array<ContextMenuItem>) => {
         setContextMenuOpen(true);
@@ -75,6 +75,7 @@ const Engine: React.FC = () => {
                         setSelectedInputType={setSelectedInputType}
                         setSelectedOutputId={setSelectedOutputId}
                         setSelectedOutputType={setSelectedOutputType}
+                        setSelectedNode={setSelectedNode}
                         selectedInputId={selectedInputId}
                         selectedOutputId={selectedOutputId}
                         selectedOutputType={selectedOutputType}

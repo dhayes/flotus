@@ -12,9 +12,12 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { useState } from "react";
 import { useIsMobile } from "./hooks/useIsMobile";
 import MobileNotSupported from "./MobileNotSupported";
+import { useSidebarWidth } from "./hooks/useSidebarWidth";
+import { BottomPanel } from "./BottomPanel";
 
 function App() {
   const isMobile = useIsMobile(); // or use a custom threshold
+  const sidebarWidth = useSidebarWidth();
   const [offset, setOffset] = useState<{ x: number; y: number; scale: number }>({
     x: 0,
     y: 0,
@@ -37,6 +40,7 @@ function App() {
                 <Engine />
               </Connections>
             </Stage>
+            <BottomPanel sidebarWidth={sidebarWidth} />
           </div>
         </DndProvider>
       </SidebarProvider>

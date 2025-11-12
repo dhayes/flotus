@@ -13,6 +13,7 @@ type NodeProps = {
   setSelectedInputType: (id: string | null) => void;
   setSelectedOutputId: (id: string | null) => void;
   setSelectedOutputType: (id: string | null) => void;
+  setSelectedNode: (id: string | null) => void;
   selectedInputId: string | null;
   selectedOutputId: string | null;
   selectedOutputType: string | null;

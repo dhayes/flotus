@@ -20,6 +20,7 @@ import {
   TooltipContent,
   TooltipArrow,
 } from "@/components/ui/tooltip";
+import { useNodeEngine } from "@/NodeEngineContext";
 
 interface InputPortConfig {
   id: string;
@@ -84,6 +85,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
     const { startConnection, finishConnection, updatePortPosition, moveEndPoint, deleteConnectons } =
       useContext(ConnectionContext);
     const { offsetX, offsetY, scale } = useContext(StageContext);
+    const { setSelectedNode } = useNodeEngine();
 
     const nodeRef = useRef<HTMLDivElement>(null);
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -167,32 +169,41 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
         onStop={updatePortPositions}
         cancel="button,input,select,.plotly,.nodrag"
       >
-        <div ref={nodeRef} style={style} onContextMenu={(e: any) => {
-          e.preventDefault();
-          console.log(e)
-          openContextMenu(
-            {
-              x: e.clientX,
-              y: e.clientY,
-            },
-            [
+        <div ref={nodeRef} style={style}
+          onClick={() => {
+            setSelectedNode({
+              id,
+              label,
+              outputType: config.outputType,
+              outputValue: output.value,
+            });
+          }}
+          onContextMenu={(e: any) => {
+            e.preventDefault();
+            console.log(e)
+            openContextMenu(
               {
-                label: "Delete Node",
-                category: "Node",
-                icon: <Trash2 />,
-                onClick: () => {
-                  inputs.forEach(input => {
-                    if (input.removeDependencyFunction) {
-                      input.removeDependencyFunction(input.id)
-                    }
-                  })
-                  removeNode(id);
-                  deleteConnectons(Object.entries(portRefs.current).map(([id]) => id))
+                x: e.clientX,
+                y: e.clientY,
+              },
+              [
+                {
+                  label: "Delete Node",
+                  category: "Node",
+                  icon: <Trash2 />,
+                  onClick: () => {
+                    inputs.forEach(input => {
+                      if (input.removeDependencyFunction) {
+                        input.removeDependencyFunction(input.id)
+                      }
+                    })
+                    removeNode(id);
+                    deleteConnectons(Object.entries(portRefs.current).map(([id]) => id))
+                  }
                 }
-              }
-            ]
-          );
-        }}
+              ]
+            );
+          }}
         >
           <Card
             className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
