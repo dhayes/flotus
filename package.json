@@ -26,6 +26,7 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-table": "^8.21.3",
+    "@tensorflow/tfjs": "^4.22.0",
     "bmpm-phonetics": "^0.4.0",
     "chart.js": "^4.5.0",
     "class-variance-authority": "^0.7.1",

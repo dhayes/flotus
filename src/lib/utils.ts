@@ -149,3 +149,13 @@ export function withReplacedColumn(
   if (!copy) throw new Error("Invalid DataFrame in withReplacedColumn");
   return copy.addColumn(colName, newValues, { inplace: false });
 }
+
+export function toNumericMatrix(df: dfd.DataFrame, cols: string[]): number[][] {
+  const data = df.loc({ columns: cols }).values as (string | number | boolean)[][];
+  return data.map((row) =>
+    row.map((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    })
+  );
+}
