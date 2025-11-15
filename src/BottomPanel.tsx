@@ -16,7 +16,7 @@ const MAX_HEIGHT = 500;
 export function BottomPanel({ sidebarWidth }: BottomPanelProps) {
   const [height, setHeight] = useState(250);
   const [isDragging, setIsDragging] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const panelRef = useRef<HTMLDivElement>(null);
   const { selectedNode } = useNodeEngine()
 
