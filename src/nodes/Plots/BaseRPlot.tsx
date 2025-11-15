@@ -58,6 +58,7 @@ type BaseRPlotProps = {
     height?: number;
     xLabel?: string;
     yLabel?: string;
+    compact?: boolean;
 };
 
 export const BaseRPlot: React.FC<BaseRPlotProps> = ({
