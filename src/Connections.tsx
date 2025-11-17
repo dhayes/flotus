@@ -117,8 +117,8 @@ const Connections: React.FC<ConnectionsProps> = ({ offset, children }) => {
         {children}
         <svg
           style={{
-            width: '100%',
-            height: '100vh',
+            width: '1000vw',
+            height: '1000vh',
             position: 'absolute',
             inset: 0,
             pointerEvents: 'none',

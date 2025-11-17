@@ -117,7 +117,7 @@ const Stage: React.FC<PropsWithChildren<{ setOffset }>> = ({ setOffset, children
     const ref = useRef<HTMLDivElement | null>(null)
 
     return (
-        <StageContext value={{ offsetX: currentX, offsetY: currentY, scale: scale }}>
+        <StageContext value={{ offsetX: currentX -1000, offsetY: currentY -1000, scale: scale }}>
             <div ref={(el) => {
                 ref.current = el;
                 dropRef(el); // attach drop target
