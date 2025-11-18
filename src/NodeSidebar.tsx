@@ -122,7 +122,7 @@ const NodeSidebar: React.FC = () => {
         )
     } 
     return (
-            <div data-sidebar className="flex-none !mt-4 !p-2 !pt-8 !border-none !bg-zinc-900 !text-white !absolute !z-999 !top-0 h-full">
+            <div data-sidebar className="flex-none !mt-4 !p-2 !pt-8 !border-none !bg-zinc-900 !text-white !z-999 !fixed h-full">
         <Sidebar side="left" variant="sidebar" collapsible="offcanvas" className="bg-zinc-900 text-white h-full !border-r-zinc-700 !absolute !z-999 !top-0">
             <SidebarHeader className="p-3 border-b !border-none bg-zinc-900">
                 <div className="flex items-center">
