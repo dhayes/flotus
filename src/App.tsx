@@ -14,6 +14,7 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import MobileNotSupported from "./MobileNotSupported";
 import { useSidebarWidth } from "./hooks/useSidebarWidth";
 import { BottomPanel } from "./BottomPanel";
+import { TopMenuBar } from "./TopMenuBar";
 
 function App() {
   const isMobile = useIsMobile(); // or use a custom threshold
@@ -25,23 +26,28 @@ function App() {
   });
 
   if (isMobile) {
-    return (
-      <MobileNotSupported />
-    );
+    return <MobileNotSupported />;
   }
+
   return (
     <NodeEngineProvider>
       <SidebarProvider>
         <DndProvider backend={HTML5Backend}>
-          <div className="flex h-screen w-screen overflow-hidden">
-            <NodeSidebar />
-            <Stage setOffset={setOffset}>
-              <Connections offset={offset}>
-                <Engine />
-              </Connections>
-            </Stage>
-            <BottomPanel sidebarWidth={sidebarWidth} />
-          </div>
+          <>
+            {/* Desktop-style menu bar pinned at the very top */}
+            <TopMenuBar />
+
+            {/* Existing layout, unchanged */}
+            <div className="flex h-screen w-screen overflow-hidden">
+              <NodeSidebar />
+              <Stage setOffset={setOffset}>
+                <Connections offset={offset}>
+                  <Engine />
+                </Connections>
+              </Stage>
+              <BottomPanel sidebarWidth={sidebarWidth} />
+            </div>
+          </>
         </DndProvider>
       </SidebarProvider>
     </NodeEngineProvider>
