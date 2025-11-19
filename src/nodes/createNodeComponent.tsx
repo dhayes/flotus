@@ -210,7 +210,7 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
             style={width ? { width: `${width}px` } : { width: config.width || 240 }}
           > */}
           <Card
-            className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none"
+            className="bg-[#53585a] overflow-hidden rounded-lg !gap-0 !py-0 !shadow-none !border-none min-w-56"
             style={{ width: width ?? 'fit-content' }}
           >
             <CardHeader className="text-left px-4 text-black !gap-0 !py-1 text-sm font-semibold font-mono select-none !shadow-none">
