@@ -90,18 +90,18 @@ export function createNodeComponent<State>(config: NodeFactoryProps<State>): Rea
     const nodeRef = useRef<HTMLDivElement>(null);
     const portRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    const makeInput = (type: string): InputPortConfig => ({
-      id: useId(),
+    const makeInput = (id: string, type: string): InputPortConfig => ({
+      id: id,
       value: null,
       connected: null,
       type: type
     });
 
     const [inputs, setInputs] = useState<InputPortConfig[]>(
-      config.initialInputs.map(type => makeInput(type))
+      config.initialInputs.map((type, idx) => makeInput(`${id}-in-${idx}`, type))
     );
 
-    const outputId = useId();
+    const outputId = `${id}-out0`;
     const [output, setOutput] = useState<OutputPort>({ id: outputId, value: null, connected: null, type: config.outputType });
     const [dependencies, setDependencies] = useState<Record<string, (v: any) => void>>({});
     const [state, setState] = useState<State>(config.initialState);
