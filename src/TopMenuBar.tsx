@@ -1,4 +1,5 @@
 // src/TopMenuBar.tsx
+
 import {
   Menubar,
   MenubarContent,
@@ -14,32 +15,32 @@ import { useState } from "react";
 
 import { LoginDialog } from "@/components/auth/LoginDialog";
 import { SignupDialog } from "@/components/auth/SignupDialog";
+import { ResetPasswordDialog } from "@/components/auth/ResetPasswordDialog";
 
-// src/types/MenuTypes.ts
-export type MenuShortcut = string;
+// ---------------------------------------------------------------------------
+// Menu Definitions (inline — no external file needed)
+// ---------------------------------------------------------------------------
+type MenuShortcut = string;
+type MenuAction = () => void;
 
-export type MenuAction = () => void;
-
-export type MenuEntry =
+type MenuEntry =
   | {
-      type: "item";
-      label: string;
-      shortcut?: MenuShortcut;
-      action?: MenuAction;
-      disabled?: boolean;
-    }
+    type: "item";
+    label: string;
+    shortcut?: MenuShortcut;
+    action?: MenuAction;
+    disabled?: boolean;
+  }
   | {
-      type: "separator";
-    };
+    type: "separator";
+  };
 
-export interface MenuDefinition {
+interface MenuDefinition {
   label: string;
   items: MenuEntry[];
 }
 
-
-
-export const appMenu: MenuDefinition[] = [
+const appMenu: MenuDefinition[] = [
   {
     label: "File",
     items: [
@@ -79,11 +80,14 @@ export const appMenu: MenuDefinition[] = [
     ],
   },
 ];
-// src/TopMenuBar.tsx
 
+// ---------------------------------------------------------------------------
+// Top Menu Bar Component
+// ---------------------------------------------------------------------------
 export function TopMenuBar() {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [showReset, setShowReset] = useState(false);
 
   const triggerClasses =
     "px-2 py-1 font-medium rounded-none " +
@@ -128,11 +132,11 @@ export function TopMenuBar() {
           ))}
         </Menubar>
 
-        {/* RIGHT AUTH BUTTONS */}
+        {/* RIGHT-SIDE AUTH BUTTONS */}
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="ghost"
-            className="h-6 text-xs text-zinc-100 hover:bg-zinc-800"
+            className="h-6 text-xs text-zinc-100 hover:bg-zinc-300"
             onClick={() => setShowLogin(true)}
           >
             Log in
@@ -147,9 +151,35 @@ export function TopMenuBar() {
         </div>
       </div>
 
-      {/* DIALOGS */}
-      <LoginDialog open={showLogin} onOpenChange={setShowLogin} />
-      <SignupDialog open={showSignup} onOpenChange={setShowSignup} />
+      {/* AUTH DIALOGS */}
+      // inside TopMenuBar()
+      <LoginDialog
+        open={showLogin}
+        onOpenChange={setShowLogin}
+        onForgotPassword={() => {
+          setShowLogin(false);
+          setShowReset(true);
+        }}
+        onSignup={() => {
+          setShowLogin(false);
+          setShowSignup(true);
+        }}
+      />
+
+
+      <SignupDialog
+        open={showSignup}
+        onOpenChange={setShowSignup}
+      />
+
+      <ResetPasswordDialog
+        open={showReset}
+        onOpenChange={setShowReset}
+        onBackToLogin={() => {
+          setShowReset(false);
+          setShowLogin(true);
+        }}
+      />
     </>,
     document.body
   );
