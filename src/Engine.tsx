@@ -6,6 +6,7 @@ import ContextMenu, { ContextMenuItem } from './ContextMenu';
 import { getNodeComponent } from './NodeRegistry';
 import { nodeCatalog } from './nodeRegistration';
 import { useNodeEngine } from './NodeEngineContext';
+import { ConnectionContext } from './Connections';
 
 const grouped = nodeCatalog.reduce((acc, node) => {
     if (!acc[node.category]) acc[node.category] = [];
@@ -27,6 +28,8 @@ const Engine: React.FC = () => {
     const [contextMenuOpen, setContextMenuOpen] = useState(false);
     const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [contextMenuItems, setContextMenuItems] = useState<Array<ContextMenuItem>>([])
+    const { startConnection, finishConnection, updatePortPosition, moveEndPoint, deleteConnectons, getConnections   } =
+        useContext(ConnectionContext);
 
     useEffect(() => {
         if (selectedInputId && addDependencyFunction && updateInputFunction) {
@@ -34,10 +37,10 @@ const Engine: React.FC = () => {
             console.log(selectedInputType, selectedOutputType)
             if (selectedInputType === selectedOutputType) {
                 addDependencyFunction(selectedInputId, updateInputFunction);
-            setSelectedInputId(null);
-            setAddDependencyFunction(undefined);
-            setRemoveDependencyFunction(undefined);
-            setUpdateInputFunction(undefined);
+                setSelectedInputId(null);
+                setAddDependencyFunction(undefined);
+                setRemoveDependencyFunction(undefined);
+                setUpdateInputFunction(undefined);
             }
         }
     }, [selectedInputId, addDependencyFunction, updateInputFunction]);
@@ -92,8 +95,8 @@ const Engine: React.FC = () => {
                     label: node.label,
                     category: node.category,
                     onClick: () => {
-                       createNode(node.type, {x: e.clientX, y: e.clientY})
-                       closeContextMenu(); 
+                        createNode(node.type, { x: e.clientX, y: e.clientY })
+                        closeContextMenu();
                     },
                 })));
             }}>

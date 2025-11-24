@@ -16,6 +16,8 @@ export const ConnectionContext = createContext({
   deleteConnection: (toPortId: string) => { },
   moveEndPoint: (toPortId: string) => { },
   deleteConnectons: (portIds: string[]) => { },
+  getConnections: () => [],
+  importConnections: (conns: Connection[]) => { },
 });
 
 interface ConnectionsProps {
@@ -109,9 +111,16 @@ const Connections: React.FC<ConnectionsProps> = ({ offset, children }) => {
     startConnection(otherPortId || '');
   }
 
+  const getConnections = () => connections;
+
+  const importConnections = (conns: Connection[]) => {
+    setConnections(conns);
+  };
+
+
   return (
     <ConnectionContext.Provider
-      value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint, deleteConnectons }}
+      value={{ startConnection, finishConnection, updatePortPosition, deleteConnection, moveEndPoint, deleteConnectons, getConnections, importConnections }}
     >
       <div>
         {children}
